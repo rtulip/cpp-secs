@@ -24,10 +24,9 @@ namespace ecs::world
         bool has_component();
         size_t get_eid();
 
-        size_t count_components();
+        World(/* args */) = default;
 
     public:
-        World(/* args */) = default;
         ~World() = default;
         World(const World &world) = default;
         World(World &&world) = default;
@@ -39,12 +38,12 @@ namespace ecs::world
         RegistryNode *find();
         template <class T>
         size_t get_cid();
+        size_t count_components();
 
         class WorldBuilder;
         static WorldBuilder create();
 
         class EntityBuilder;
-        friend class EntityBuilder;
         EntityBuilder build_entity();
     };
 
@@ -92,7 +91,7 @@ namespace ecs::world
         ~EntityBuilder(){};
 
         template <class T>
-        EntityBuilder &with();
+        EntityBuilder &with(T &&t);
         void build();
     };
 
@@ -102,9 +101,11 @@ namespace ecs::world
     }
 
     template <class T>
-    World::EntityBuilder &World::EntityBuilder::with()
+    World::EntityBuilder &World::EntityBuilder::with(T &&t)
     {
-        entity.add_component(world_ptr->get_cid<T>());
+        RegistryNode *node = world_ptr->find<T>();
+        entity.add_component(world_ptr->get_cid<T>(), node->size<T>());
+        node->push<T>(std::move(t));
         return *this;
     }
 

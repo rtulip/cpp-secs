@@ -25,14 +25,13 @@ namespace ecs::registry
         template <class T>
         bool check_type();
         template <class T>
-        std::shared_ptr<std::vector<T>> get_array();
-
-        template <class T>
         void push(T &&t);
         template <class T>
         const T &get(size_t i);
         template <class T>
         void set(size_t i, T &&t);
+        template <class T>
+        size_t size();
     };
 
     RegistryNode::RegistryNode()
@@ -65,14 +64,6 @@ namespace ecs::registry
     }
 
     template <class T>
-    std::shared_ptr<std::vector<T>> RegistryNode::get_array()
-    {
-        if (!this->check_type<T>())
-            throw std::runtime_error("Type doesn't match node");
-        return std::static_pointer_cast<std::vector<T>>(this->data);
-    }
-
-    template <class T>
     void RegistryNode::push(T &&t)
     {
         if (!this->check_type<T>())
@@ -94,6 +85,14 @@ namespace ecs::registry
         if (!this->check_type<T>())
             throw std::runtime_error("Type doesn't match node");
         std::static_pointer_cast<std::vector<T>>(this->data)->at(i) = t;
+    }
+
+    template <class T>
+    size_t RegistryNode::size()
+    {
+        if (!this->check_type<T>())
+            throw std::runtime_error("Type doesn't match node");
+        return std::static_pointer_cast<std::vector<T>>(this->data)->size();
     }
 
 } // namespace ecs::registry
