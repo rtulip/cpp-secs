@@ -22,6 +22,9 @@ namespace ecs::world
         void register_component();
         template <class T>
         bool has_component();
+        size_t get_eid();
+
+        size_t count_components();
 
     public:
         World(/* args */) = default;
@@ -30,12 +33,19 @@ namespace ecs::world
         World(World &&world) = default;
 
         void add_entity();
+        void add_entity(Entity &&entity);
 
         template <class T>
         RegistryNode *find();
+        template <class T>
+        size_t get_cid();
 
         class WorldBuilder;
         static WorldBuilder create();
+
+        class EntityBuilder;
+        friend class EntityBuilder;
+        EntityBuilder build_entity();
     };
 
     class World::WorldBuilder
@@ -44,22 +54,13 @@ namespace ecs::world
         World world;
 
     public:
-        WorldBuilder();
-        ~WorldBuilder();
+        WorldBuilder() = default;
+        ~WorldBuilder() = default;
 
         template <class T>
         WorldBuilder &with_component();
         World build();
     };
-
-    void World::add_entity()
-    {
-        auto node = this->find<Entity>();
-        node->push<Entity>(Entity(this->next_eid++, this->nodes.size()));
-    }
-
-    World::WorldBuilder::WorldBuilder() {}
-    World::WorldBuilder::~WorldBuilder() {}
 
     template <class T>
     World::WorldBuilder &World::WorldBuilder::with_component()
@@ -78,6 +79,74 @@ namespace ecs::world
     {
         World::WorldBuilder wb;
         return wb;
+    }
+
+    class World::EntityBuilder
+    {
+    private:
+        Entity entity;
+        World *world_ptr;
+
+    public:
+        EntityBuilder(World *ptr);
+        ~EntityBuilder(){};
+
+        template <class T>
+        EntityBuilder &with();
+        void build();
+    };
+
+    World::EntityBuilder::EntityBuilder(World *ptr) : entity(ptr->get_eid(), ptr->count_components())
+    {
+        this->world_ptr = ptr;
+    }
+
+    template <class T>
+    World::EntityBuilder &World::EntityBuilder::with()
+    {
+        entity.add_component(world_ptr->get_cid<T>());
+        return *this;
+    }
+
+    void World::EntityBuilder::build()
+    {
+        world_ptr->add_entity(std::move(entity));
+    }
+
+    World::EntityBuilder World::build_entity()
+    {
+        World::EntityBuilder entity_builder(this);
+        return entity_builder;
+    }
+
+    size_t World::get_eid()
+    {
+        return this->next_eid++;
+    }
+
+    template <class T>
+    size_t World::get_cid()
+    {
+        if (!this->has_component<T>())
+            throw std::runtime_error("Component is not registered");
+        return this->node_index_lookup[typeid(T).hash_code()];
+    }
+
+    size_t World::count_components()
+    {
+        return this->nodes.size();
+    }
+
+    void World::add_entity()
+    {
+        auto node = this->find<Entity>();
+        node->push<Entity>(Entity(this->next_eid++, this->nodes.size()));
+    }
+
+    void World::add_entity(Entity &&entity)
+    {
+        auto node = this->find<Entity>();
+        node->push<Entity>(std::move(entity));
     }
 
     template <class T>

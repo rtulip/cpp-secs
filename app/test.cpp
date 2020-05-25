@@ -31,7 +31,12 @@ int main()
     if (node->check_type<Velocity>())
         std::cout << "Yup!" << std::endl;
 
-    w.add_entity();
-    w.add_entity();
-    w.add_entity();
+    w.build_entity()
+        .with<Position>()
+        .build();
+
+    node = w.find<Entity>();
+    auto e = node->get<Entity>(0);
+    if (e.has_component(w.get_cid<Position>()))
+        std::cout << "Yay!" << std::endl;
 }
