@@ -1,41 +1,37 @@
 #include <iostream>
-#include <ecs/registry.hpp>
 #include <ecs/world.hpp>
 
 using ecs::world::World;
-using ecs::registry::Registry;
 
-struct Position {
+struct Position
+{
     int64_t x;
     int64_t y;
 };
 
-struct Velocity {
+struct Velocity
+{
     int64_t dx;
     int64_t dy;
 };
 
-int main() {
+int main()
+{
 
-    { // Testing world stuffs
+    auto w = World::create()
+                 .with_component<Position>()
+                 .with_component<Velocity>()
+                 .build();
 
-        auto w = World::create()
-            .with_component<Position>()
-            .with_component<Velocity>()
-            .build();
-        std::cout << w.count_components() << std::endl;
+    auto node = w.find<Position>();
+    if (node->check_type<Position>())
+        std::cout << "Yup!" << std::endl;
 
-        auto iter = w.registry.iter_to<Velocity>();
-        if ((*iter).check_type<Velocity>()) std::cout << "Holy shit it worked!" << std::endl;
-        
-        w.add_entity();
-        w.add_entity();
-        w.add_entity();
+    node = w.find<Velocity>();
+    if (node->check_type<Velocity>())
+        std::cout << "Yup!" << std::endl;
 
-        iter = w.registry.iter_to<Entity>();
-        if ((*iter).get_array<Entity>()->size() == 3) std::cout << "Found 3 entities!" << std::endl;
-
-    } // End testing world stuffs
-
-
+    w.add_entity();
+    w.add_entity();
+    w.add_entity();
 }

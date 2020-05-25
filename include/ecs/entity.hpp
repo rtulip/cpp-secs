@@ -3,29 +3,30 @@
 #include <boost/dynamic_bitset.hpp>
 
 using bitset = boost::dynamic_bitset<>;
-namespace ecs::entity{
-
-class Entity
+namespace ecs::entity
 {
-private:
-    size_t id;
-    bitset components;
-public:
-    Entity(size_t eid, size_t n_components);
-    ~Entity();
-};
 
-Entity::Entity(size_t eid, size_t n_components)
-{
-    id = eid;
-    components = bitset(n_components);
-}
+    class Entity
+    {
+    private:
+        size_t id;
+        bitset components;
 
-Entity::~Entity()
-{
-}
+    public:
+        Entity(size_t eid, size_t n_components);
+        ~Entity();
+    };
 
+    Entity::Entity(size_t eid, size_t n_components)
+    {
+        id = eid;
+        components = bitset(n_components);
+    }
 
-}
+    Entity::~Entity()
+    {
+    }
+
+} // namespace ecs::entity
 
 #endif
