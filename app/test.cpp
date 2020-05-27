@@ -1,7 +1,9 @@
 #include <iostream>
 #include <ecs/world.hpp>
+#include <ecs/system.hpp>
 #include <tuple>
 
+using ecs::system::System;
 using ecs::world::World;
 
 struct Position
@@ -16,13 +18,12 @@ struct Velocity
     int64_t dy;
 };
 
-class MovementSystem
+class MovementSystem : System<Position, Velocity>
 {
 private:
     int64_t fx, fy;
 
 public:
-    typedef std::tuple<Position *, Velocity *> system_data;
     MovementSystem(int64_t, int64_t);
     ~MovementSystem();
     void run(system_data data);
@@ -71,33 +72,15 @@ int main()
 
     MovementSystem sys(2, 1);
 
-    w.build_entity()
-        .with<Velocity>({2, 2})
-        .build();
+    for (int i = 0; i < 20; i++)
+    {
 
-    w.build_entity()
-        .with<Position>({1, 1})
-        .build();
-
-    w.build_entity()
-        .with<Position>({4, 4})
-        .with<Velocity>({2, 2})
-        .build();
-
-    w.build_entity()
-        .with<Position>({5, 5})
-        .with<Velocity>({2, 2})
-        .build();
-
-    w.build_entity()
-        .with<Position>({6, 6})
-        .with<Velocity>({2, 2})
-        .build();
-
-    w.build_entity()
-        .with<Position>({7, 7})
-        .with<Velocity>({2, 2})
-        .build();
+        auto b = w.build_entity()
+                     .with<Position>({i, i});
+        if (i % 2 == 0)
+            b.with<Velocity>({i, i});
+        b.build();
+    }
 
     auto node = w.find<Entity>();
 
@@ -109,7 +92,8 @@ int main()
 
         if (e.has_component(pos_id) && e.has_component(vel_id))
         {
-            MovementSystem::system_data data = std::make_tuple(
+
+            auto data = std::make_tuple(
                 w.find<Position>()->get<Position>(e.get_component(pos_id)),
                 w.find<Velocity>()->get<Velocity>(e.get_component(vel_id)));
 
