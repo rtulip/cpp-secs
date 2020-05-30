@@ -1,7 +1,8 @@
-#include <iostream>
+
 #include <ecs/world.hpp>
 #include <ecs/system.hpp>
 #include <tuple>
+#include <iostream>
 
 using ecs::system::System;
 using ecs::world::World;
@@ -18,14 +19,14 @@ struct Velocity
     int64_t dy;
 };
 
-class MovementSystem : System<Position, Velocity>
+class MovementSystem : public System<Position, Velocity>
 {
 private:
     int64_t fx, fy;
 
 public:
     MovementSystem(int64_t, int64_t);
-    ~MovementSystem();
+    ~MovementSystem() = default;
     void run(system_data data);
 };
 
@@ -33,10 +34,6 @@ MovementSystem::MovementSystem(int64_t x, int64_t y)
 {
     fx = x;
     fy = y;
-}
-
-MovementSystem::~MovementSystem()
-{
 }
 
 void MovementSystem::run(MovementSystem::system_data data)
@@ -62,65 +59,59 @@ void MovementSystem::run(MovementSystem::system_data data)
         vel->dy = 0;
 }
 
+class PositionPrinterSystem : public System<const Position>
+{
+public:
+    PositionPrinterSystem(/* args */) = default;
+    ~PositionPrinterSystem() = default;
+    void run(system_data data);
+};
+
+void PositionPrinterSystem::run(PositionPrinterSystem::system_data data)
+{
+    const Position *pos = std::get<0>(data);
+    std::cout << "Pos:\n\tx: " << pos->x << "\n\ty: " << pos->y << std::endl;
+}
+
+class VelocityPrinterSystem : public System<const Velocity>
+{
+public:
+    VelocityPrinterSystem(/* args */) = default;
+    ~VelocityPrinterSystem() = default;
+    void run(system_data data);
+};
+
+void VelocityPrinterSystem::run(VelocityPrinterSystem::system_data data)
+{
+    const Velocity *vel = std::get<0>(data);
+    std::cout << "Vel:\n\tx: " << vel->dx << "\n\ty: " << vel->dy << std::endl;
+}
+
 int main()
 {
 
-    auto w = World::create()
-                 .with_component<Position>()
-                 .with_component<Velocity>()
-                 .build();
-
-    MovementSystem sys(2, 1);
+    auto world = World::create()
+                     .with_component<Position>()
+                     .with_component<Velocity>()
+                     .build();
 
     for (int i = 0; i < 20; i++)
     {
-
-        auto b = w.build_entity()
+        auto b = world.build_entity()
                      .with<Position>({i, i});
         if (i % 2 == 0)
             b.with<Velocity>({i, i});
         b.build();
     }
 
-    auto node = w.find<Entity>();
+    MovementSystem sys(2, 1);
+    PositionPrinterSystem pos_print;
+    VelocityPrinterSystem vel_print;
+    world.add_system(&pos_print);
+    world.add_system(&vel_print);
+    world.add_system(&sys);
 
-    size_t count = 1;
-    size_t pos_id = w.get_cid<Position>();
-    size_t vel_id = w.get_cid<Velocity>();
-    for (auto e : *(node->iter<Entity>()))
-    {
-
-        if (e.has_component(pos_id) && e.has_component(vel_id))
-        {
-
-            auto data = std::make_tuple(
-                w.find<Position>()->get<Position>(e.get_component(pos_id)),
-                w.find<Velocity>()->get<Velocity>(e.get_component(vel_id)));
-
-            std::cout << "Before\nEntity " << count
-                      << "\n\tPos: "
-                      << "{ " << std::get<0>(data)->x << ", " << std::get<0>(data)->y << "}"
-                      << "\n\tVel: "
-                      << "{ " << std::get<1>(data)->dx << ", " << std::get<1>(data)->dy << "}"
-                      << std::endl;
-
-            sys.run(data);
-
-            data = std::make_tuple(
-                w.find<Position>()->get<Position>(e.get_component(pos_id)),
-                w.find<Velocity>()->get<Velocity>(e.get_component(vel_id)));
-
-            std::cout << "After\nEntity " << count
-                      << "\n\tPos: "
-                      << "{ " << std::get<0>(data)->x << ", " << std::get<0>(data)->y << "}"
-                      << "\n\tVel: "
-                      << "{ " << std::get<1>(data)->dx << ", " << std::get<1>(data)->dy << "}"
-                      << std::endl;
-        }
-        else
-        {
-            std::cout << "Entity " << count << " does not meet requirements" << std::endl;
-        }
-        count++;
-    }
+    world.dispatch();
+    std::cout << "--------------------------------" << std::endl;
+    world.dispatch();
 }
