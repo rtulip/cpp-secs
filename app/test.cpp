@@ -59,33 +59,29 @@ void MovementSystem::run(MovementSystem::system_data data)
         vel->dy = 0;
 }
 
-class PositionPrinterSystem : public System<const Position>
+class PositionPrinterSystem : public System<Position>
 {
 public:
     PositionPrinterSystem(/* args */) = default;
     ~PositionPrinterSystem() = default;
-    void run(system_data data);
+    void run(system_data data)
+    {
+        const Position *pos = std::get<0>(data);
+        std::cout << "Pos:\n\tx: " << pos->x << "\n\ty: " << pos->y << std::endl;
+    }
 };
 
-void PositionPrinterSystem::run(PositionPrinterSystem::system_data data)
-{
-    const Position *pos = std::get<0>(data);
-    std::cout << "Pos:\n\tx: " << pos->x << "\n\ty: " << pos->y << std::endl;
-}
-
-class VelocityPrinterSystem : public System<const Velocity>
+class VelocityPrinterSystem : public System<Velocity>
 {
 public:
     VelocityPrinterSystem(/* args */) = default;
     ~VelocityPrinterSystem() = default;
-    void run(system_data data);
+    void run(system_data data)
+    {
+        const Velocity *vel = std::get<0>(data);
+        std::cout << "Vel:\n\tx: " << vel->dx << "\n\ty: " << vel->dy << std::endl;
+    }
 };
-
-void VelocityPrinterSystem::run(VelocityPrinterSystem::system_data data)
-{
-    const Velocity *vel = std::get<0>(data);
-    std::cout << "Vel:\n\tx: " << vel->dx << "\n\ty: " << vel->dy << std::endl;
-}
 
 int main()
 {
