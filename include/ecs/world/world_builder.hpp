@@ -26,6 +26,8 @@ namespace ecs::world
 
         template <class T>
         WorldBuilder &with_component();
+        template <class T>
+        WorldBuilder &add_resource(T &&t);
         World build();
     };
 
@@ -43,13 +45,27 @@ namespace ecs::world
     }
 
     /**
+     * @brief Adds a resource of type T to the World being built.
+     * 
+     * This consumes the T.
+     * 
+     * @tparam T - The component to be registered
+     * @return World::WorldBuilder& - This WorldBuilder
+     */
+    template <class T>
+    World::WorldBuilder &World::WorldBuilder::add_resource(T &&t)
+    {
+        world.add_resource<T>(std::move(t));
+        return *this;
+    }
+
+    /**
      * @brief Finishes building the world.
      * 
      * @return World - The built world.
      */
     World World::WorldBuilder::build()
     {
-        world.register_component<Entity>();
         return std::move(world);
     }
 

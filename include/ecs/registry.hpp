@@ -14,7 +14,7 @@ namespace ecs::registry
      * 
      * The RegistryNode is at the core of this ECS design. The aim of the RegistryNode
      * is to be a generic container, which isn't templated. This requires the data to be
-     * held in a void*, which will has some safety concerns, which will be discussed 
+     * held in a void*, which will has some safety concerns which will be discussed 
      * later. In order to have RegistryNode not be templated, accessing and the data of 
      * the RegistryNode is templated in exchange. 
      * 
@@ -26,6 +26,17 @@ namespace ecs::registry
      *      1. For a given RegistryNode, it's data will be a pointer to a vector<T>
      *      2. T is determined when the RegistryNode is constructed.
      *      3. T will NOT change at runtime.
+     * 
+     * Variants:
+     *      A RegistryNode can be used in two ways: as a Component container, or a
+     *      Resource container. The only difference is that a Resource will only have one
+     *      element in the vector, and any get() call will return a pointer to the one
+     *      element, whereas a Component container will have many elements which can be
+     *      accessed with a get() call. 
+     * 
+     *      The following assumptions must be upheld for Resource RegistryNodes:
+     *          - There is ALWAYS 1 element in the 0th position of the vector.
+     *          - No elements are added or removed from the vector<T> after construction.
      * 
      */
     class RegistryNode
@@ -50,7 +61,11 @@ namespace ecs::registry
         } NodeType;
 
         template <class T>
-        static RegistryNode create(RegistryNode::Type node_type);
+        static RegistryNode create();
+        template <class T>
+        static RegistryNode create_resource(T &t);
+        template <class T>
+        static RegistryNode create_resource(T &&t);
         template <class T>
         void push(T &&t);
         template <class T>
@@ -82,7 +97,7 @@ namespace ecs::registry
     }
 
     /**
-     * @brief A safe constructor of a RegistryNode.
+     * @brief A safe constructor of a Component RegistryNode.
      * 
      * Safety:
      *      The first invariant is upheld, as this constructs a shared pointer to a 
@@ -101,13 +116,81 @@ namespace ecs::registry
      * @return RegistryNode - The RegistryNode associated with the type T.
      */
     template <class T>
-    RegistryNode RegistryNode::create(RegistryNode::Type node_type)
+    RegistryNode RegistryNode::create()
     {
         RegistryNode node(typeid(T).hash_code());
 
         auto v_ptr = std::make_shared<std::vector<T>>();
         node.data = v_ptr;
-        node.NodeType = node_type;
+        node.NodeType = RegistryNode::Type::Component;
+        return node;
+    }
+
+    /**
+     * @brief A safe constructor of a Resource RegistryNode.
+     * 
+     * Safety:
+     *      The first invariant is upheld, as this constructs a shared pointer to a 
+     *      vector<T> and assigns it to the RegistryNode's data.
+     * 
+     *      The second invariant is upheld, by associating the type T with this 
+     *      RegistryNode through the type hash_code. typeid(T).hash_code() is assigned
+     *      to the RegistryNode's data_hash_code.     
+     * 
+     *      So long as the data_hash_code is checked for EVERY manipulation of the data,
+     *      the second invariant will be upheld.
+     *      
+     *      The third invariant is upheld because the data_hash_code is a const member.
+     *  
+     *      Additionally, t is moved into the node here, thus upholding the existance of
+     *      the 0th element in the vector.
+     * 
+     * @tparam T - The type to be assciated with the new RegistryNode
+     * @return RegistryNode - The RegistryNode associated with the type T.
+     */
+    template <class T>
+    RegistryNode RegistryNode::create_resource(T &t)
+    {
+        RegistryNode node(typeid(T).hash_code());
+
+        auto v_ptr = std::make_shared<std::vector<T>>();
+        node.data = v_ptr;
+        node.NodeType = RegistryNode::Type::Resource;
+        node.cast<T>()->push_back(t);
+        return node;
+    }
+
+    /**
+     * @brief A safe constructor of a Resource RegistryNode.
+     * 
+     * Safety:
+     *      The first invariant is upheld, as this constructs a shared pointer to a 
+     *      vector<T> and assigns it to the RegistryNode's data.
+     * 
+     *      The second invariant is upheld, by associating the type T with this 
+     *      RegistryNode through the type hash_code. typeid(T).hash_code() is assigned
+     *      to the RegistryNode's data_hash_code.     
+     * 
+     *      So long as the data_hash_code is checked for EVERY manipulation of the data,
+     *      the second invariant will be upheld.
+     *      
+     *      The third invariant is upheld because the data_hash_code is a const member.
+     *  
+     *      Additionally, t is moved into the node here, thus upholding the existance of
+     *      the 0th element in the vector.
+     * 
+     * @tparam T - The type to be assciated with the new RegistryNode
+     * @return RegistryNode - The RegistryNode associated with the type T.
+     */
+    template <class T>
+    RegistryNode RegistryNode::create_resource(T &&t)
+    {
+        RegistryNode node(typeid(T).hash_code());
+
+        auto v_ptr = std::make_shared<std::vector<T>>();
+        node.data = v_ptr;
+        node.NodeType = RegistryNode::Type::Resource;
+        node.cast<T>()->push_back(std::move(t));
         return node;
     }
 
@@ -164,6 +247,9 @@ namespace ecs::registry
      * Safety:
      *      This function uses cast<T> to modify the RegistryNode data pointer, thus all
      *      invariants are upheld.
+     *  
+     *      This function does nothing when operating on a Resource RegistryNode, 
+     *      assuring that no elements are added to the resource.
      * 
      * @tparam T - The associated type of this RegistryNode
      * @param t - An instance of T
@@ -171,7 +257,8 @@ namespace ecs::registry
     template <class T>
     void RegistryNode::push(T &&t)
     {
-        this->cast<T>()->push_back(std::move(t));
+        if (this->NodeType == RegistryNode::Type::Component)
+            this->cast<T>()->push_back(std::move(t));
     }
 
     /**
@@ -194,7 +281,18 @@ namespace ecs::registry
     template <class T>
     T *RegistryNode::get(size_t i)
     {
-        return &((*this->cast<T>())[i]);
+        switch (this->NodeType)
+        {
+        case RegistryNode::Type::Component:
+            return &((*this->cast<T>())[i]);
+            break;
+        case RegistryNode::Type::Resource:
+            return &((*this->cast<T>())[0]);
+            break;
+        default:
+            throw std::runtime_error("Cannot get from a RegistryNode with Unknown Type");
+            break;
+        }
     }
 
     /**
@@ -211,7 +309,15 @@ namespace ecs::registry
     template <class T>
     void RegistryNode::set(size_t i, T &&t)
     {
-        this->cast<T>()->at(i) = t;
+        switch (this->NodeType)
+        {
+        case RegistryNode::Type::Component:
+            this->cast<T>()->at(i) = std::move(t);
+            break;
+        case RegistryNode::Type::Resource:
+            this->cast<T>()->at(0) = std::move(t);
+            break;
+        }
     }
 
     /**

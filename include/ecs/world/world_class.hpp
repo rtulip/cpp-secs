@@ -198,6 +198,10 @@ namespace ecs::world
         template <class T>
         void register_component();
         template <class T>
+        void add_resource(T &&t);
+        template <class T>
+        void add_resource(T &t);
+        template <class T>
         bool has_component() const;
         size_t get_eid();
 
@@ -211,12 +215,25 @@ namespace ecs::world
             this->nodes = std::vector<RegistryNode>();
             this->node_index_lookup = std::unordered_map<size_t, size_t>();
             this->systems = ecs::dispatch::DispatcherContainer();
+
+            this->register_component<Entity>();
+            this->add_resource<World *>(this);
         }
 
     public:
         ~World() = default;
         World(const World &world) = delete;
-        World(World &&world) = default;
+        World(World &&world)
+        {
+            this->next_eid = world.next_eid;
+            this->nodes = std::move(world.nodes);
+            this->node_index_lookup = std::move(world.node_index_lookup);
+            this->systems = std::move(world.systems);
+
+            auto world_res_node = this->find<World *>();
+            auto this_ptr_copy = this;
+            world_res_node->set<World *>(0, std::move(this_ptr_copy));
+        }
 
         void add_entity(Entity &&entity);
         ecs::dispatch::DispatcherContainerBuilder add_systems();
@@ -395,7 +412,35 @@ namespace ecs::world
         if (this->has_component<T>())
             throw std::runtime_error("Component is already registered");
         this->node_index_lookup.emplace(typeid(T).hash_code(), this->nodes.size());
-        this->nodes.push_back(RegistryNode::create<T>(RegistryNode::Type::Component));
+        this->nodes.push_back(RegistryNode::create<T>());
+    }
+
+    /**
+     * @brief Adds a resource to the World.
+     * 
+     * @tparam T - The type to be added.
+     */
+    template <class T>
+    void World::add_resource(T &&t)
+    {
+        if (this->has_component<T>())
+            throw std::runtime_error("Already have a resource of this type!");
+        this->node_index_lookup.emplace(typeid(T).hash_code(), this->nodes.size());
+        this->nodes.push_back(RegistryNode::create_resource<T>(std::move(t)));
+    }
+
+    /**
+     * @brief Adds a resource to the World.
+     * 
+     * @tparam T - The type to be added.
+     */
+    template <class T>
+    void World::add_resource(T &t)
+    {
+        if (this->has_component<T>())
+            throw std::runtime_error("Already have a resource of this type!");
+        this->node_index_lookup.emplace(typeid(T).hash_code(), this->nodes.size());
+        this->nodes.push_back(RegistryNode::create_resource<T>(t));
     }
 
     /**

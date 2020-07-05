@@ -5,6 +5,7 @@
 #include <tuple>
 #include <iostream>
 #include <chrono>
+#include <string>
 
 using ecs::entity::Entity;
 using ecs::system::System;
@@ -148,7 +149,9 @@ int main()
     }
 
     {
-        auto world = World::create().build();
+        auto world = World::create()
+                         .add_resource(std::string("Hello World!"))
+                         .build();
         for (int i = 0; i < 30; i++)
             world.build_entity().build();
 
@@ -191,5 +194,13 @@ int main()
         std::cout << "Dispatching! " << std::endl;
 
         world.dispatch();
+
+        auto node = world.find<World *>();
+        World **world_ptr_ptr = node->get<World *>(0);
+        World *world_ptr = *world_ptr_ptr;
+
+        world_ptr->dispatch();
+
+        std::cout << "Second Dispatch! " << std::endl;
     }
 }
