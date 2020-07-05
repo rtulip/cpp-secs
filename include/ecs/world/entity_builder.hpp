@@ -62,6 +62,8 @@ namespace ecs::world
      */
     void World::EntityBuilder::build()
     {
+        RegistryNode *node = world_ptr->find<Entity>();
+        entity.add_component(world_ptr->get_cid<Entity>(), node->size<Entity>());
         world_ptr->add_entity(std::move(entity));
     }
 
