@@ -319,10 +319,10 @@ namespace ecs::world
     /**
      * @brief Builds a vector of tuples of pointers to components for systems to iterate over.
      * 
-     * Systems work on a set of components< A, B, ...>, and are intended to run over a tuple
-     * of component pointers <A*, B*, ...>, where each element in the tuple belongs to a
-     * single Entity. This function aims to construct the tuples of system_data and group
-     * them into a vector which can then be iterated over.
+     * Systems work on a set of components <A, B, ...>, and are intended to run over a
+     * tuple of component pointers <A*, B*, ...>, where each element in the tuple belongs
+     * to asingle Entity. This function aims to construct the tuples of system_data and
+     * group them into a vector which can then be iterated over.
      * 
      * @tparam Ts - The set of components to be fetched.
      * @return std::vector<std::tuple<Ts *...>> 
@@ -395,7 +395,7 @@ namespace ecs::world
         if (this->has_component<T>())
             throw std::runtime_error("Component is already registered");
         this->node_index_lookup.emplace(typeid(T).hash_code(), this->nodes.size());
-        this->nodes.push_back(RegistryNode::create<T>());
+        this->nodes.push_back(RegistryNode::create<T>(RegistryNode::Type::Component));
     }
 
     /**

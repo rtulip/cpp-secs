@@ -42,8 +42,15 @@ namespace ecs::registry
     public:
         ~RegistryNode();
 
+        enum class Type
+        {
+            Component,
+            Resource,
+            Unknown,
+        } NodeType;
+
         template <class T>
-        static RegistryNode create();
+        static RegistryNode create(RegistryNode::Type node_type);
         template <class T>
         void push(T &&t);
         template <class T>
@@ -66,6 +73,7 @@ namespace ecs::registry
     RegistryNode::RegistryNode(size_t hash_code) : data_hash_code(hash_code)
     {
         this->data = nullptr;
+        this->NodeType = RegistryNode::Type::Unknown;
     }
 
     RegistryNode::~RegistryNode()
@@ -93,12 +101,13 @@ namespace ecs::registry
      * @return RegistryNode - The RegistryNode associated with the type T.
      */
     template <class T>
-    RegistryNode RegistryNode::create()
+    RegistryNode RegistryNode::create(RegistryNode::Type node_type)
     {
         RegistryNode node(typeid(T).hash_code());
 
         auto v_ptr = std::make_shared<std::vector<T>>();
         node.data = v_ptr;
+        node.NodeType = node_type;
         return node;
     }
 
@@ -142,6 +151,8 @@ namespace ecs::registry
     {
         if (!this->check_type<T>())
             throw std::runtime_error("Type doesn't match node");
+        if (this->NodeType == RegistryNode::Type::Unknown)
+            throw std::runtime_error("RegistryNode formed improperly and has an unknown NodeType");
         return std::static_pointer_cast<std::vector<T>>(this->data);
     }
 
