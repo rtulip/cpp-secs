@@ -2,6 +2,8 @@
 #define ecs_world_builder_hpp
 
 #include <ecs/world.hpp>
+#include <ecs/entity.hpp>
+#include <vector>
 
 namespace ecs::world
 {
@@ -18,6 +20,7 @@ namespace ecs::world
     {
     private:
         World world;
+        std::vector<size_t> resource_idxs;
 
     public:
         WorldBuilder() = default;
@@ -66,6 +69,14 @@ namespace ecs::world
      */
     World World::WorldBuilder::build()
     {
+        world.component_mask = ecs::entity::bitset(world.count_components());
+        int i = 0;
+        for (auto node : world.nodes)
+        {
+            if (!node.is_resource())
+                world.component_mask.set(i);
+            i++;
+        }
         return std::move(world);
     }
 

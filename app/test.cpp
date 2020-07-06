@@ -102,6 +102,33 @@ public:
     }
 };
 
+class ResourceUser : public System<std::string>
+{
+public:
+    ResourceUser() = default;
+    ~ResourceUser() = default;
+    void run(system_data data)
+    {
+        const std::string *str = std::get<0>(data);
+        std::cout << "String Resource: " << *str << std::endl;
+    }
+};
+
+class EntityAdder : public System<Entity, World *>
+{
+public:
+    EntityAdder() = default;
+    ~EntityAdder() = default;
+
+    void run(system_data data)
+    {
+        Entity *e = std::get<0>(data);
+        World **world_ptr_ptr = std::get<1>(data);
+        std::cout << "Entity: " << e->eid() << " Is making another entity!" << std::endl;
+        (*world_ptr_ptr)->build_entity().build();
+    }
+};
+
 int main()
 {
 
@@ -150,7 +177,6 @@ int main()
 
     {
         auto world = World::create()
-                         .add_resource(std::string("Hello World!"))
                          .build();
         for (int i = 0; i < 30; i++)
             world.build_entity().build();
@@ -194,13 +220,37 @@ int main()
         std::cout << "Dispatching! " << std::endl;
 
         world.dispatch();
+    }
 
-        auto node = world.find<World *>();
-        World **world_ptr_ptr = node->get<World *>(0);
-        World *world_ptr = *world_ptr_ptr;
+    {
 
-        world_ptr->dispatch();
+        auto world = World::create()
+                         .add_resource(std::string("This is a global string!"))
+                         .build();
 
-        std::cout << "Second Dispatch! " << std::endl;
+        for (int i = 0; i < 10; i++)
+            world.build_entity().build();
+
+        ResourceUser resource_user;
+        world.add_systems()
+            .add_system(&resource_user, "Test Resource User", {})
+            .done();
+
+        world.dispatch();
+    }
+
+    {
+        auto world = World::create().build();
+
+        world.build_entity().build();
+
+        EntityAdder adder;
+        world.add_systems()
+            .add_system(&adder, "Entity Adder", {})
+            .done();
+
+        world.dispatch();
+        std::cout << "---------------------" << std::endl;
+        world.dispatch();
     }
 }

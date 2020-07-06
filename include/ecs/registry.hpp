@@ -76,6 +76,8 @@ namespace ecs::registry
         size_t size();
         template <class T>
         std::shared_ptr<std::vector<T>> iter();
+
+        bool is_resource();
     };
 
     /**
@@ -354,6 +356,11 @@ namespace ecs::registry
     std::shared_ptr<std::vector<T>> RegistryNode::iter()
     {
         return this->cast<T>();
+    }
+
+    bool RegistryNode::is_resource()
+    {
+        return this->NodeType == RegistryNode::Type::Resource;
     }
 
 } // namespace ecs::registry

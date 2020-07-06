@@ -194,6 +194,7 @@ namespace ecs::world
         std::vector<RegistryNode> nodes;
         std::unordered_map<size_t, size_t> node_index_lookup;
         ecs::dispatch::DispatcherContainer systems;
+        ecs::entity::bitset component_mask;
 
         template <class T>
         void register_component();
@@ -215,7 +216,7 @@ namespace ecs::world
             this->nodes = std::vector<RegistryNode>();
             this->node_index_lookup = std::unordered_map<size_t, size_t>();
             this->systems = ecs::dispatch::DispatcherContainer();
-
+            this->component_mask = ecs::entity::bitset(0);
             this->register_component<Entity>();
             this->add_resource<World *>(this);
         }
@@ -229,6 +230,7 @@ namespace ecs::world
             this->nodes = std::move(world.nodes);
             this->node_index_lookup = std::move(world.node_index_lookup);
             this->systems = std::move(world.systems);
+            this->component_mask = std::move(world.component_mask);
 
             auto world_res_node = this->find<World *>();
             auto this_ptr_copy = this;
@@ -252,6 +254,7 @@ namespace ecs::world
         std::vector<std::tuple<Ts *...>> fetch();
 
         class WorldBuilder;
+        friend class WorldBuilder;
         static WorldBuilder create();
 
         class EntityBuilder;
@@ -312,9 +315,12 @@ namespace ecs::world
     template <class T>
     T *World::get(Entity *e)
     {
+        RegistryNode *node = this->find<T>();
+        if (node->is_resource())
+            return node->get<T>(0);
+
         size_t cid = this->get_cid<T>();
         size_t idx = e->get_component(cid);
-        RegistryNode *node = this->find<T>();
 
         return node->get<T>(idx);
     }
@@ -330,7 +336,7 @@ namespace ecs::world
     {
         bitset bits = bitset(this->count_components());
         (bits.set(this->get_cid<Ts>()), ...);
-        return bits;
+        return bits & this->component_mask;
     }
 
     /**
