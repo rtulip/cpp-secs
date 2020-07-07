@@ -10,6 +10,7 @@
 using ecs::entity::Entity;
 using ecs::system::System;
 using ecs::world::World;
+using ecs::world::WorldResource;
 
 struct Position
 {
@@ -114,7 +115,7 @@ public:
     }
 };
 
-class EntityAdder : public System<Entity, World *>
+class EntityAdder : public System<Entity, WorldResource>
 {
 public:
     EntityAdder() = default;
@@ -123,9 +124,37 @@ public:
     void run(system_data data)
     {
         Entity *e = std::get<0>(data);
-        World **world_ptr_ptr = std::get<1>(data);
+        WorldResource *world_res = std::get<1>(data);
         std::cout << "Entity: " << e->eid() << " Is making another entity!" << std::endl;
-        (*world_ptr_ptr)->build_entity().build();
+        world_res->world()->build_entity().build();
+    }
+};
+
+struct ToRemove
+{
+};
+class EntityRemover : public System<Entity, WorldResource, ToRemove>
+{
+public:
+    EntityRemover() = default;
+    ~EntityRemover() = default;
+    void run(system_data data)
+    {
+        Entity *e = std::get<0>(data);
+        WorldResource *world_res = std::get<1>(data);
+        world_res->remove_entity_component<ToRemove>(e);
+    }
+};
+
+class ToRemovePrinter : public System<Entity, ToRemove>
+{
+public:
+    ToRemovePrinter() = default;
+    ~ToRemovePrinter() = default;
+    void run(system_data data)
+    {
+        Entity *e = std::get<0>(data);
+        std::cout << "Entity " << e->eid() << " Has a ToRemove!" << std::endl;
     }
 };
 
@@ -242,7 +271,8 @@ int main()
     {
         auto world = World::create().build();
 
-        world.build_entity().build();
+        for (int i = 0; i < 10; i++)
+            world.build_entity().build();
 
         EntityAdder adder;
         world.add_systems()
@@ -253,4 +283,30 @@ int main()
         std::cout << "---------------------" << std::endl;
         world.dispatch();
     }
+
+    // {
+    //     auto world = World::create()
+    //                      .with_component<ToRemove>()
+    //                      .build();
+
+    //     for (int i = 0; i < 10; i++)
+    //     {
+    //         auto builder = world.build_entity();
+    //         if (i % 2 == 0)
+    //             builder.with<ToRemove>({});
+    //         builder.build();
+    //     }
+
+    //     EntityRemover remover;
+    //     ToRemovePrinter before_printer;
+    //     ToRemovePrinter after_printer;
+
+    //     world.add_systems()
+    //         .add_system(&before_printer, "Before Printer", {})
+    //         .add_system(&remover, "Remover", {"Before Printer"})
+    //         .add_system(&after_printer, "After Printer", {"Remover"})
+    //         .done();
+
+    //     world.dispatch();
+    // }
 }

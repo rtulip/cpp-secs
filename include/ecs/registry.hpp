@@ -71,12 +71,15 @@ namespace ecs::registry
         template <class T>
         T *get(size_t i);
         template <class T>
+        void erase(size_t i);
+        template <class T>
         void set(size_t i, T &&t);
         template <class T>
         size_t size();
         template <class T>
         std::shared_ptr<std::vector<T>> iter();
 
+        size_t get_hash();
         bool is_resource();
     };
 
@@ -298,6 +301,36 @@ namespace ecs::registry
     }
 
     /**
+     * @brief A way to remove an element from a Component Registry
+     * 
+     * Removes the ith element from the RegistryNode vector if it is a Component Type.
+     * Note:
+     *      This will affect the indicies of entities who's component id is higher than i
+     *      Because RegistryNodes are unaware of others, this MUST be handled properly
+     * 
+     * Safety: 
+     *      This function uses cast<T> to access the RegistryNode data pointer, thus all 
+     *      invariants are upheld.
+     * 
+     *      Bounds are NOT checked at this point yet.
+     * 
+     *      Additionally, no operation is done on a RegistryNode of Resource type, thus
+     *      upholding the requirement that there is ALWAYS a 0th element in the node.
+     * @tparam T  
+     * @param i - The index
+     */
+    template <class T>
+    void RegistryNode::erase(size_t i)
+    {
+        switch (this->NodeType)
+        {
+        case RegistryNode::Type::Component:
+            auto vec_ptr = this->cast<T>();
+            vec_ptr->erase(vec_ptr->begin() + i);
+        }
+    }
+
+    /**
      * @brief A safe setter function to data[i]
      * 
      * Safety:
@@ -356,6 +389,11 @@ namespace ecs::registry
     std::shared_ptr<std::vector<T>> RegistryNode::iter()
     {
         return this->cast<T>();
+    }
+
+    size_t RegistryNode::get_hash()
+    {
+        return this->data_hash_code;
     }
 
     bool RegistryNode::is_resource()

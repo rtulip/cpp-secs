@@ -33,9 +33,11 @@ namespace ecs::entity
         ~Entity() = default;
         size_t eid() const;
         void add_component(size_t cid, size_t idx);
+        void remove_component(size_t cid);
         bool has_component(size_t cid) const;
         bool has_component(bitset mask) const;
         size_t get_component(size_t cid) const;
+        size_t decrement_component(size_t cid);
     };
 
     /**
@@ -70,6 +72,12 @@ namespace ecs::entity
     {
         this->index_lookup.emplace(cid, idx);
         this->components[cid] = 1;
+    }
+
+    void Entity::remove_component(size_t cid)
+    {
+        this->index_lookup.erase(cid);
+        this->components[cid] = 0;
     }
 
     /**
@@ -107,6 +115,11 @@ namespace ecs::entity
     size_t Entity::get_component(size_t cid) const
     {
         return this->index_lookup.at(cid);
+    }
+
+    size_t Entity::decrement_component(size_t cid)
+    {
+        return --this->index_lookup.at(cid);
     }
 
 } // namespace ecs::entity

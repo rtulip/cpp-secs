@@ -29,7 +29,7 @@ namespace ecs::system
     public:
         using system_data = std::tuple<Params *...>;
         virtual void run(system_data) = 0;
-        void exec(World *world_ptr)
+        void exec(World *world_ptr) final
         {
             for (auto data : world_ptr->fetch<Params...>())
                 this->run(data);

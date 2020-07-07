@@ -9,6 +9,8 @@
 #include <string>
 #include <iostream>
 #include <thread>
+#include <functional>
+#include <algorithm>
 
 using ecs::entity::bitset;
 using ecs::entity::Entity;
@@ -180,6 +182,24 @@ namespace ecs::dispatch
 
 namespace ecs::world
 {
+    class World;
+    class WorldResource
+    {
+    private:
+        World *world_ptr;
+        std::vector<std::pair<size_t, std::function<void()>>> remove_functions;
+        std::vector<std::pair<size_t, size_t>> remove_indicies;
+
+    public:
+        WorldResource(World *world_pointer);
+        WorldResource(WorldResource &&other) = default;
+        WorldResource &operator=(WorldResource &&other) = default;
+        ~WorldResource() = default;
+        template <class T>
+        void remove_entity_component(Entity *);
+        void merge();
+        World *world() { return this->world_ptr; }
+    };
     /**
      * World is a container class for different components.
      * 
@@ -205,6 +225,7 @@ namespace ecs::world
         template <class T>
         bool has_component() const;
         size_t get_eid();
+        void add_entity(Entity &&entity);
 
         template <class T>
         T *get(Entity *e);
@@ -218,7 +239,8 @@ namespace ecs::world
             this->systems = ecs::dispatch::DispatcherContainer();
             this->component_mask = ecs::entity::bitset(0);
             this->register_component<Entity>();
-            this->add_resource<World *>(this);
+            WorldResource res(this);
+            this->add_resource<WorldResource>(std::move(res));
         }
 
     public:
@@ -232,12 +254,11 @@ namespace ecs::world
             this->systems = std::move(world.systems);
             this->component_mask = std::move(world.component_mask);
 
-            auto world_res_node = this->find<World *>();
-            auto this_ptr_copy = this;
-            world_res_node->set<World *>(0, std::move(this_ptr_copy));
+            auto world_res_node = this->find<WorldResource>();
+            WorldResource res(this);
+            world_res_node->set<WorldResource>(0, std::move(res));
         }
 
-        void add_entity(Entity &&entity);
         ecs::dispatch::DispatcherContainerBuilder add_systems();
         void dispatch();
 
@@ -259,6 +280,8 @@ namespace ecs::world
 
         class EntityBuilder;
         EntityBuilder build_entity();
+
+        friend class WorldResource;
     };
 
     /**
@@ -479,6 +502,82 @@ namespace ecs::world
         return &this->nodes.at(idx);
     }
 
+    WorldResource::WorldResource(World *world_pointer)
+    {
+        this->world_ptr = world_pointer;
+    }
+
+    template <class T>
+    void WorldResource::remove_entity_component(Entity *e)
+    {
+        size_t cid = this->world_ptr->get_cid<T>();
+        if (!e->has_component(cid))
+            throw std::runtime_error("Cannot remove a component from an entity if it doesn't have it.");
+        size_t entity_component_index = e->get_component(cid);
+        size_t entity_component_index_cpy = entity_component_index;
+        RegistryNode *node_ptr = this->world_ptr->find<T>();
+        this->remove_indicies.push_back(std::make_pair(entity_component_index, cid));
+        auto f = [node_ptr, entity_component_index]() {
+            node_ptr->erase<T>(entity_component_index);
+        };
+        this->remove_functions.push_back(std::make_pair(entity_component_index_cpy, std::move(f)));
+    }
+
+    void WorldResource::merge()
+    {
+        if (this->remove_functions.size() == 0)
+            return;
+
+        std::cout << "in merge!" << std::endl;
+
+        auto function_sorting = [](std::pair<size_t, std::function<void()>> lhs, std::pair<size_t, std::function<void()>> rhs) {
+            return std::get<0>(lhs) > std::get<0>(rhs);
+        };
+
+        auto index_sorting = [](std::pair<size_t, size_t> lhs, std::pair<size_t, size_t> rhs) {
+            return std::get<0>(lhs) > std::get<0>(rhs);
+        };
+
+        std::sort(this->remove_functions.begin(), this->remove_functions.end(), function_sorting);
+        std::sort(this->remove_indicies.begin(), this->remove_indicies.end(), index_sorting);
+
+        std::cout << "Finished sorting!" << std::endl;
+
+        // Actually remove all the components.
+        for (auto function_pair : this->remove_functions)
+        {
+            size_t idx = std::get<0>(function_pair);
+            std::cout << "Removing index: " << idx << std::endl;
+            auto f = std::get<1>(function_pair);
+            f();
+        }
+
+        // Adjust indicies
+        RegistryNode *entity_node = this->world_ptr->find<Entity>();
+
+        for (auto e : *(entity_node->iter<Entity>()))
+        {
+            for (auto index_pair : this->remove_indicies)
+            {
+                size_t idx = std::get<0>(index_pair);
+                size_t cid = std::get<1>(index_pair);
+                if (e.has_component(cid))
+                {
+                    size_t e_idx = e.get_component(cid);
+                    if (e_idx > idx)
+                        e.decrement_component(cid);
+                    else if (e_idx == idx)
+                        e.remove_component(cid);
+                }
+            }
+        }
+
+        this->remove_functions.clear();
+        this->remove_indicies.clear();
+
+        std::cout << "Done merging!" << std::endl;
+    }
+
 } // namespace ecs::world
 
 namespace ecs::dispatch
@@ -499,6 +598,8 @@ namespace ecs::world
      */
     void World::dispatch()
     {
+        RegistryNode *world_res_node = this->find<WorldResource>();
+        WorldResource *world_res = world_res_node->get<WorldResource>(0);
         for (auto stage : this->systems)
         {
             /**
@@ -526,6 +627,8 @@ namespace ecs::world
             {
                 threads.at(i).join();
             }
+
+            world_res->merge();
         }
     }
 } // namespace ecs::world
