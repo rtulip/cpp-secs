@@ -517,8 +517,9 @@ namespace ecs::world
         size_t entity_component_index_cpy = entity_component_index;
         RegistryNode *node_ptr = this->world_ptr->find<T>();
         this->remove_indicies.push_back(std::make_pair(entity_component_index, cid));
-        auto f = [node_ptr, entity_component_index]() {
+        auto f = [node_ptr, entity_component_index, e, cid]() {
             node_ptr->erase<T>(entity_component_index);
+            e->remove_component(cid);
         };
         this->remove_functions.push_back(std::make_pair(entity_component_index_cpy, std::move(f)));
     }

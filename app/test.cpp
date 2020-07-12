@@ -123,10 +123,23 @@ public:
 
     void run(system_data data)
     {
-        Entity *e = std::get<0>(data);
         WorldResource *world_res = std::get<1>(data);
-        std::cout << "Entity: " << e->eid() << " Is making another entity!" << std::endl;
+        std::cout << "Entity Is making another entity!" << std::endl;
         world_res->world()->build_entity().build();
+    }
+};
+
+class EntityAccessor : public System<Entity>
+{
+public:
+    EntityAccessor() = default;
+    ~EntityAccessor() = default;
+
+    void run(system_data data)
+    {
+        Entity *e = std::get<0>(data);
+        std::cout << "Looking at entity: " << e->eid() << std::endl;
+        ;
     }
 };
 
@@ -275,38 +288,42 @@ int main()
             world.build_entity().build();
 
         EntityAdder adder;
+        EntityAccessor accessor;
         world.add_systems()
             .add_system(&adder, "Entity Adder", {})
+            .add_system(&accessor, "Entity Accessor", {"Entity Adder"})
             .done();
+
+        std::cout << "Starting Adder dispatch!" << std::endl;
 
         world.dispatch();
         std::cout << "---------------------" << std::endl;
         world.dispatch();
     }
 
-    // {
-    //     auto world = World::create()
-    //                      .with_component<ToRemove>()
-    //                      .build();
+    {
+        auto world = World::create()
+                         .with_component<ToRemove>()
+                         .build();
 
-    //     for (int i = 0; i < 10; i++)
-    //     {
-    //         auto builder = world.build_entity();
-    //         if (i % 2 == 0)
-    //             builder.with<ToRemove>({});
-    //         builder.build();
-    //     }
+        for (int i = 0; i < 10; i++)
+        {
+            auto builder = world.build_entity();
+            if (i % 2 == 0)
+                builder.with<ToRemove>({});
+            builder.build();
+        }
 
-    //     EntityRemover remover;
-    //     ToRemovePrinter before_printer;
-    //     ToRemovePrinter after_printer;
+        EntityRemover remover;
+        ToRemovePrinter before_printer;
+        ToRemovePrinter after_printer;
 
-    //     world.add_systems()
-    //         .add_system(&before_printer, "Before Printer", {})
-    //         .add_system(&remover, "Remover", {"Before Printer"})
-    //         .add_system(&after_printer, "After Printer", {"Remover"})
-    //         .done();
+        world.add_systems()
+            .add_system(&before_printer, "Before Printer", {})
+            .add_system(&remover, "Remover", {"Before Printer"})
+            .add_system(&after_printer, "After Printer", {"Remover"})
+            .done();
 
-    //     world.dispatch();
-    // }
+        world.dispatch();
+    }
 }
