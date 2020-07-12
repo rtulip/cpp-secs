@@ -183,6 +183,19 @@ namespace ecs::dispatch
 namespace ecs::world
 {
     class World;
+
+    /**
+     * @brief A wrapper around a World* for use as a resource.
+     * 
+     * In order for systems to interact with the underlying World, this Resource can be
+     * used. This resource provides methods for adding & removing entities and components
+     * from the World. 
+     * 
+     * Operations done through the WorldResource can bring some safety risks, thus it is
+     * important to ensure that this resource is only used when needed and that the 
+     * guidelines are followed for its use. 
+     * 
+     */
     class WorldResource
     {
     private:
@@ -200,6 +213,7 @@ namespace ecs::world
         void merge();
         World *world() { return this->world_ptr; }
     };
+
     /**
      * World is a container class for different components.
      * 
@@ -502,47 +516,84 @@ namespace ecs::world
         return &this->nodes.at(idx);
     }
 
+    /**
+     * @brief Construct a new World Resource:: World Resource object
+     * 
+     * @param world_pointer - A pointer to the World.
+     */
     WorldResource::WorldResource(World *world_pointer)
     {
         this->world_ptr = world_pointer;
     }
 
+    /**
+     * @brief Stage an entities component for removal.
+     *  
+     * Removing a component from an Entity is hard because its' component can be in the
+     * middle of the vector of components, thus removing the component will affect other
+     * entities accessing their own components. Additionally, because systems are run,
+     * the pointer to every component used by a system must remain valid while the system
+     * is being run.
+     * 
+     * For these reasons, calling this function does NOT remove the component instantly,
+     * rather, the removal is postponed until after all concurrent system's have joined.
+     * 
+     * @tparam T - The type of the component to be removed. 
+     * @param e - A pointer to the Entity to operate on.
+     */
     template <class T>
     void WorldResource::remove_entity_component(Entity *e)
     {
+        // Get the component id of T.
         size_t cid = this->world_ptr->get_cid<T>();
+
+        // If the entity doesn't have a T component, throw a runtime error. This is to
+        // help ensure that a system is only operating on the entity it's working with.
         if (!e->has_component(cid))
             throw std::runtime_error("Cannot remove a component from an entity if it doesn't have it.");
+
+        // Get the index of the component to be removed.
         size_t entity_component_index = e->get_component(cid);
-        size_t entity_component_index_cpy = entity_component_index;
+
+        // Fetch the RegistryNode for the component
         RegistryNode *node_ptr = this->world_ptr->find<T>();
+
+        // Create a pair of the component index and the component id.
         this->remove_indicies.push_back(std::make_pair(entity_component_index, cid));
+
+        // Create a lambda function to delete the component instance, and remove the
+        // entity's knowledge of the component.
         auto f = [node_ptr, entity_component_index, e, cid]() {
-            node_ptr->erase<T>(entity_component_index);
-            e->remove_component(cid);
+            e->remove_component(cid);                   // Forget the component
+            node_ptr->erase<T>(entity_component_index); // Delete the component
         };
-        this->remove_functions.push_back(std::make_pair(entity_component_index_cpy, std::move(f)));
+
+        // Add the lambda function to be called later paired with the component index.
+        this->remove_functions.push_back(std::make_pair(entity_component_index, std::move(f)));
     }
 
+    /**
+     * @brief Performes all the removals from systems after their execution.
+     */
     void WorldResource::merge()
     {
+        // If nothing to remove, return early for faster execution.
         if (this->remove_functions.size() == 0)
             return;
 
-        std::cout << "in merge!" << std::endl;
-
+        // Create lambda functions for sorting the lists in index decending order.
         auto function_sorting = [](std::pair<size_t, std::function<void()>> lhs, std::pair<size_t, std::function<void()>> rhs) {
             return std::get<0>(lhs) > std::get<0>(rhs);
         };
-
         auto index_sorting = [](std::pair<size_t, size_t> lhs, std::pair<size_t, size_t> rhs) {
             return std::get<0>(lhs) > std::get<0>(rhs);
         };
 
+        // Sort the lists in index decending order.
+        // Since these components are removed by index, it's important that components
+        // with the largest index are removed first. This is why these sorts are needed.
         std::sort(this->remove_functions.begin(), this->remove_functions.end(), function_sorting);
         std::sort(this->remove_indicies.begin(), this->remove_indicies.end(), index_sorting);
-
-        std::cout << "Finished sorting!" << std::endl;
 
         // Actually remove all the components.
         for (auto function_pair : this->remove_functions)
@@ -553,10 +604,10 @@ namespace ecs::world
             f();
         }
 
-        // Adjust indicies
+        // Adjust indicies of every Entity effected.
         RegistryNode *entity_node = this->world_ptr->find<Entity>();
 
-        for (auto e : *(entity_node->iter<Entity>()))
+        for (auto &e : *(entity_node->iter<Entity>()))
         {
             for (auto index_pair : this->remove_indicies)
             {
@@ -566,17 +617,17 @@ namespace ecs::world
                 {
                     size_t e_idx = e.get_component(cid);
                     if (e_idx > idx)
+                    {
                         e.decrement_component(cid);
-                    else if (e_idx == idx)
-                        e.remove_component(cid);
+                        std::cout << "Decremented Entity " << e.eid() << " component pointer" << std::endl;
+                    }
                 }
             }
         }
 
+        // Empty the lists for the next systems.
         this->remove_functions.clear();
         this->remove_indicies.clear();
-
-        std::cout << "Done merging!" << std::endl;
     }
 
 } // namespace ecs::world
@@ -629,6 +680,7 @@ namespace ecs::world
                 threads.at(i).join();
             }
 
+            // Perform any removals required now that all threads have joined.
             world_res->merge();
         }
     }

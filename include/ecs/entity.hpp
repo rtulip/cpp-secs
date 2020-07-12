@@ -74,6 +74,11 @@ namespace ecs::entity
         this->components[cid] = 1;
     }
 
+    /**
+     * @brief Removes a component from an entity
+     * 
+     * @param cid - The component id.
+     */
     void Entity::remove_component(size_t cid)
     {
         this->index_lookup.erase(cid);
