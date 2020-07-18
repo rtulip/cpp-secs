@@ -204,6 +204,7 @@ namespace ecs::world
         std::mutex mutex_guard;
         std::vector<std::pair<size_t, std::function<void()>>> remove_functions;
         std::vector<std::pair<size_t, size_t>> remove_indicies;
+        std::vector<std::function<void()>> add_functions;
 
     public:
         WorldResource(World *world_pointer);
@@ -212,6 +213,8 @@ namespace ecs::world
         ~WorldResource() = default;
         template <class T>
         void remove_entity_component(Entity *);
+        template <class T>
+        void add_component_to_entity(Entity *, T &&t);
         template <class... Ts>
         void invalidate_entity_components(Entity *e);
         template <class T>
@@ -566,6 +569,28 @@ namespace ecs::world
     }
 
     /**
+     * @brief Adds a component to an entity.
+     * 
+     * In order to be thread safe, this is also done during the merge of each stage.
+     * 
+     * @tparam T 
+     * @param e 
+     * @param t 
+     */
+    template <class T>
+    void WorldResource::add_component_to_entity(Entity *e, T &&t)
+    {
+
+        RegistryNode *node = world_ptr->find<T>();
+        size_t cid = world_ptr->get_cid<T>();
+        auto f = [e, node, cid, &t]() {
+            e->add_component(cid, node->size<T>());
+            node->push<T>(std::move(t));
+        };
+        this->add_functions.push_back(f);
+    }
+
+    /**
      * @brief Stage an Entity's component for removal.
      *  
      * Removing a component from an Entity is hard because its' component can be in the
@@ -759,6 +784,11 @@ namespace ecs::world
      */
     void WorldResource::merge()
     {
+        for (auto &f : this->add_functions)
+            f();
+
+        this->add_functions.clear();
+
         // If nothing to remove, return early for faster execution.
         if (this->remove_functions.size() == 0)
             return;

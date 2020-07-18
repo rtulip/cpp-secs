@@ -145,6 +145,7 @@ public:
 struct ToRemove
 {
 };
+
 class EntityComponentRemover : public System<Entity, WorldResource, ToRemove>
 {
 public:
@@ -180,6 +181,23 @@ public:
     {
         Entity *e = std::get<0>(data);
         std::cout << "Entity " << e->eid() << " is in the world!" << std::endl;
+    }
+};
+
+template <class T>
+class ComponentAdder : public System<Entity, WorldResource>
+{
+public:
+    ComponentAdder() = default;
+    ~ComponentAdder() = default;
+    void run(system_data data)
+    {
+        Entity *e = std::get<0>(data);
+        WorldResource *world_res = std::get<1>(data);
+        size_t cid = world_res->world()->get_cid<T>();
+        T t;
+        if (!e->has_component(cid))
+            world_res->add_component_to_entity(e, std::move(t));
     }
 };
 
@@ -375,6 +393,38 @@ int main()
             .add_system(&to_remove_printer, "To Remove Printer", {"Entity Printer"})
             .add_system(&remover, "Entity Remover", {"To Remove Printer"})
             .add_system(&to_remove_printer, "After To Remove Printer", {"Entity Remover"})
+            .done();
+
+        for (int i = 0; i < 5; i++)
+        {
+            world.dispatch();
+            std::cout << "----- End of Dispatch -----" << std::endl;
+        }
+    }
+
+    {
+        std::cout << "--- Test Add & remove! ---" << std::endl;
+        auto world = World::create()
+                         .with_component<ToRemove>()
+                         .build();
+
+        for (int i = 0; i < 10; i++)
+        {
+            auto builder = world.build_entity();
+            if (i % 2 == 0)
+                builder.with<ToRemove>({});
+            builder.build();
+        }
+
+        EntityComponentRemover remover;
+        ComponentAdder<ToRemove> adder;
+        ToRemovePrinter to_remove_printer;
+
+        world.add_systems()
+            .add_system(&to_remove_printer, "Before Printer", {})
+            .add_system(&adder, "Adder", {"Before Printer"})
+            .add_system(&remover, "Remover", {"Before Printer"})
+            // .add_system(&to_remove_printer, "After Printer", {"Remover", "Adder"})
             .done();
 
         for (int i = 0; i < 5; i++)
