@@ -51,7 +51,7 @@ namespace ecs::registry
         RegistryNode(size_t hash_code);
 
     public:
-        ~RegistryNode();
+        ~RegistryNode() = default;
 
         enum class Type
         {
@@ -94,11 +94,6 @@ namespace ecs::registry
     {
         this->data = nullptr;
         this->NodeType = RegistryNode::Type::Unknown;
-    }
-
-    RegistryNode::~RegistryNode()
-    {
-        std::cout << "Deleting node with data: " << data << std::endl;
     }
 
     /**

@@ -11,6 +11,7 @@
 #include <thread>
 #include <functional>
 #include <algorithm>
+#include <mutex>
 
 using ecs::entity::bitset;
 using ecs::entity::Entity;
@@ -200,16 +201,23 @@ namespace ecs::world
     {
     private:
         World *world_ptr;
+        std::mutex mutex_guard;
         std::vector<std::pair<size_t, std::function<void()>>> remove_functions;
         std::vector<std::pair<size_t, size_t>> remove_indicies;
 
     public:
         WorldResource(World *world_pointer);
-        WorldResource(WorldResource &&other) = default;
-        WorldResource &operator=(WorldResource &&other) = default;
+        WorldResource(WorldResource &&other);
+        WorldResource &operator=(WorldResource &&other);
         ~WorldResource() = default;
         template <class T>
         void remove_entity_component(Entity *);
+        template <class... Ts>
+        void invalidate_entity_components(Entity *e);
+        template <class T>
+        void invalidate_entity_component(Entity *e);
+        void remove_entity(Entity *);
+        void stage_entity_for_removal(Entity *e);
         void merge();
         World *world() { return this->world_ptr; }
     };
@@ -384,6 +392,11 @@ namespace ecs::world
      * to asingle Entity. This function aims to construct the tuples of system_data and
      * group them into a vector which can then be iterated over.
      * 
+     * If an entity which has components <A, B, ...> has been flagged for removal, then
+     * the components <A, B, ...> are staged for inavlidation. Once all of an Entity's
+     * components have been removed by fetch<Ts...> calls, then it can be staged for
+     * removal entirely.
+     * 
      * @tparam Ts - The set of components to be fetched.
      * @return std::vector<std::tuple<Ts *...>> 
      */
@@ -393,12 +406,27 @@ namespace ecs::world
         std::vector<std::tuple<Ts *...>> vec;
         bitset m = this->mask<Ts...>();
         auto node = this->find<Entity>();
-        for (auto e : *(node->iter<Entity>()))
+        for (auto &e : *(node->iter<Entity>()))
         {
             if (e.has_component(m))
             {
-                auto tuple = std::make_tuple(this->get<Ts>(&e)...);
-                vec.push_back(tuple);
+                if (e.is_flagged_for_removal())
+                {
+                    auto world_res = this->find<WorldResource>()->get<WorldResource>(0);
+                    if (e.is_alive())
+                    {
+                        world_res->invalidate_entity_components<Ts...>(&e);
+                    }
+                    else
+                    {
+                        world_res->stage_entity_for_removal(&e);
+                    }
+                }
+                else
+                {
+                    auto tuple = std::make_tuple(this->get<Ts>(&e)...);
+                    vec.push_back(tuple);
+                }
             }
         }
         return std::move(vec);
@@ -526,8 +554,19 @@ namespace ecs::world
         this->world_ptr = world_pointer;
     }
 
+    WorldResource::WorldResource(WorldResource &&other)
+    {
+        this->world_ptr = other.world_ptr;
+    }
+
+    WorldResource &WorldResource::operator=(WorldResource &&other)
+    {
+        this->world_ptr = other.world_ptr;
+        return *this;
+    }
+
     /**
-     * @brief Stage an entities component for removal.
+     * @brief Stage an Entity's component for removal.
      *  
      * Removing a component from an Entity is hard because its' component can be in the
      * middle of the vector of components, thus removing the component will affect other
@@ -546,6 +585,10 @@ namespace ecs::world
     {
         // Get the component id of T.
         size_t cid = this->world_ptr->get_cid<T>();
+
+        size_t ENTITY_CID = this->world_ptr->get_cid<Entity>();
+        if (cid == ENTITY_CID)
+            throw std::runtime_error("Cannot remove the Entity component from an Entity!");
 
         // If the entity doesn't have a T component, throw a runtime error. This is to
         // help ensure that a system is only operating on the entity it's working with.
@@ -566,6 +609,145 @@ namespace ecs::world
         auto f = [node_ptr, entity_component_index, e, cid]() {
             e->remove_component(cid);                   // Forget the component
             node_ptr->erase<T>(entity_component_index); // Delete the component
+        };
+
+        // Add the lambda function to be called later paired with the component index.
+        this->remove_functions.push_back(std::make_pair(entity_component_index, std::move(f)));
+    }
+
+    /**
+     * @brief Mark an Entity's component as invalid.
+     * 
+     * This is a helper function used for removing Entities gradually. Unlike with a 
+     * component removal, the Entity can still be fetched for component T, but it will 
+     * not be operated on. This will allow for Components to be destructed over system
+     * execution, until all of an Entity's components have been removed.
+     * 
+     * @tparam T 
+     * @param e 
+     */
+    template <class T>
+    void WorldResource::invalidate_entity_component(Entity *e)
+    {
+
+        // Get the component id of T.
+        size_t cid = this->world_ptr->get_cid<T>();
+
+        size_t ENTITY_CID = this->world_ptr->get_cid<Entity>();
+        // If trying to remove the Entity Component don't do anything.
+        if (cid == ENTITY_CID)
+        {
+            return;
+        }
+
+        // If the Entity no longer has a valid T component, return and don't do anything.
+        // Otherwise, set the component to invalid.
+        if (!e->has_valid_component(cid))
+            return;
+
+        // Get the index of the component to be removed.
+        size_t entity_component_index = e->get_component(cid);
+
+        // Fetch the RegistryNode for the component
+        RegistryNode *node_ptr = this->world_ptr->find<T>();
+
+        // Create a pair of the component index and the component id.
+        this->remove_indicies.push_back(std::make_pair(entity_component_index, cid));
+
+        // Create a lambda function to delete the component instance, and remove the
+        // entity's knowledge of the component.
+        auto f = [node_ptr, entity_component_index, e, cid]() {
+            e->invalidate_component(cid);               // Invalidate the component
+            node_ptr->erase<T>(entity_component_index); // Delete the component
+        };
+
+        // Add the lambda function to be called later paired with the component index.
+        this->remove_functions.push_back(std::make_pair(entity_component_index, std::move(f)));
+    }
+
+    /**
+     * @brief Invalidates a set of components for an Entity.
+     * 
+     * This is used during a fetch<Ts... > call and allows for Systems to destruct 
+     * components of Entitys which have been marked for removal.
+     * 
+     * @tparam Ts 
+     * @param e 
+     */
+    template <class... Ts>
+    void WorldResource::invalidate_entity_components(Entity *e)
+    {
+        (this->invalidate_entity_component<Ts>(e), ...);
+    }
+
+    /**
+     * @brief Flags an entity for removal.
+     * 
+     * Because an Entity is not aware of the types of it's components, an Entity cannot
+     * be destroyed instantly, but rather it must be destroyed over time by different
+     * systems execution. 
+     * 
+     * As systems are exeucted, a fetch<Ts ...> call is made, and if the Entity would 
+     * meet the requirements to be executed, the components will be invalidated and 
+     * destroyed instead of being executed. Once the Entity is only comprised of the 
+     * Entity component and nothing else, it can then be staged for removal. 
+     * 
+     * Note: 
+     *      It is possible that an Entity may never be destroyed until the end of 
+     *      program execution. Should the programmer choose to make systems which remove 
+     *      the components of an Entity in such a way that there are components which are
+     *      never used in systems, then the Entity will be forever flagged for removal, 
+     *      but never staged. 
+     *      
+     *      This is an unlikely situation, and could be resolved with additional work, 
+     *      but is beyond the scope of this project. The overall cost of this situation
+     *      is a little bit of overhead, but doesn't cause any memory leaks or undefined
+     *      behaviour.
+     * 
+     * @param e 
+     */
+    void WorldResource::remove_entity(Entity *e)
+    {
+        e->flag_for_removal();
+    }
+
+    /**
+     * @brief Stage an entity for removal
+     * 
+     * This assumes that all but the Entity component itself has been removed. 
+     * 
+     * @param e 
+     */
+    void WorldResource::stage_entity_for_removal(Entity *e)
+    {
+
+        // --- CRITICAL SECTION ---
+        this->mutex_guard.lock();
+        if (e->is_staged_for_removal())
+        {
+            this->mutex_guard.unlock();
+            return;
+        }
+        e->set_staged_for_removal();
+        this->mutex_guard.unlock();
+        // --- END OF CRITICAL SECTION ---
+
+        // Get the component id of T.
+        size_t cid = this->world_ptr->get_cid<Entity>();
+
+        // Get the index of the component to be removed.
+        size_t entity_component_index = e->get_component(cid);
+
+        // Fetch the RegistryNode for the component
+        RegistryNode *node_ptr = this->world_ptr->find<Entity>();
+
+        // Create a pair of the component index and the component id.
+        this->remove_indicies.push_back(std::make_pair(entity_component_index, cid));
+
+        // Create a lambda function to delete the component instance, and remove the
+        // entity's knowledge of the component.
+        auto f = [node_ptr, entity_component_index, e, cid]() {
+            node_ptr->erase<Entity>(entity_component_index); // Delete the Entity Component
         };
 
         // Add the lambda function to be called later paired with the component index.
@@ -599,7 +781,6 @@ namespace ecs::world
         for (auto function_pair : this->remove_functions)
         {
             size_t idx = std::get<0>(function_pair);
-            std::cout << "Removing index: " << idx << std::endl;
             auto f = std::get<1>(function_pair);
             f();
         }
@@ -613,13 +794,13 @@ namespace ecs::world
             {
                 size_t idx = std::get<0>(index_pair);
                 size_t cid = std::get<1>(index_pair);
-                if (e.has_component(cid))
+                // The component MUST be valid, otherwise it may have been removed already.
+                if (e.has_valid_component(cid))
                 {
                     size_t e_idx = e.get_component(cid);
                     if (e_idx > idx)
                     {
                         e.decrement_component(cid);
-                        std::cout << "Decremented Entity " << e.eid() << " component pointer" << std::endl;
                     }
                 }
             }

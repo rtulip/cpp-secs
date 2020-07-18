@@ -139,13 +139,25 @@ public:
     {
         Entity *e = std::get<0>(data);
         std::cout << "Looking at entity: " << e->eid() << std::endl;
-        ;
     }
 };
 
 struct ToRemove
 {
 };
+class EntityComponentRemover : public System<Entity, WorldResource, ToRemove>
+{
+public:
+    EntityComponentRemover() = default;
+    ~EntityComponentRemover() = default;
+    void run(system_data data)
+    {
+        Entity *e = std::get<0>(data);
+        WorldResource *world_res = std::get<1>(data);
+        world_res->remove_entity_component<ToRemove>(e);
+    }
+};
+
 class EntityRemover : public System<Entity, WorldResource, ToRemove>
 {
 public:
@@ -155,7 +167,19 @@ public:
     {
         Entity *e = std::get<0>(data);
         WorldResource *world_res = std::get<1>(data);
-        world_res->remove_entity_component<ToRemove>(e);
+        world_res->remove_entity(e);
+    }
+};
+
+class EntityPrinter : public System<Entity>
+{
+public:
+    EntityPrinter() = default;
+    ~EntityPrinter() = default;
+    void run(system_data data)
+    {
+        Entity *e = std::get<0>(data);
+        std::cout << "Entity " << e->eid() << " is in the world!" << std::endl;
     }
 };
 
@@ -314,7 +338,7 @@ int main()
             builder.build();
         }
 
-        EntityRemover remover;
+        EntityComponentRemover remover;
         ToRemovePrinter before_printer;
         ToRemovePrinter after_printer;
 
@@ -325,5 +349,38 @@ int main()
             .done();
 
         world.dispatch();
+    }
+
+    {
+        std::cout << " ---------- Test remove Entity ----------" << std::endl;
+
+        auto world = World::create()
+                         .with_component<ToRemove>()
+                         .build();
+
+        for (int i = 0; i < 10; i++)
+        {
+            auto builder = world.build_entity();
+            if (i % 2 == 0)
+                builder.with<ToRemove>({});
+            builder.build();
+        }
+
+        EntityRemover remover;
+        EntityPrinter entity_printer;
+        ToRemovePrinter to_remove_printer;
+
+        world.add_systems()
+            .add_system(&entity_printer, "Entity Printer", {})
+            .add_system(&to_remove_printer, "To Remove Printer", {"Entity Printer"})
+            .add_system(&remover, "Entity Remover", {"To Remove Printer"})
+            .add_system(&to_remove_printer, "After To Remove Printer", {"Entity Remover"})
+            .done();
+
+        for (int i = 0; i < 5; i++)
+        {
+            world.dispatch();
+            std::cout << "----- End of Dispatch -----" << std::endl;
+        }
     }
 }
