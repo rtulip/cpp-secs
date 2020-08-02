@@ -202,8 +202,8 @@ namespace ecs::world
     private:
         World *world_ptr;
         std::mutex mutex_guard;
-        std::vector<std::pair<size_t, std::function<void()>>> remove_functions;
-        std::vector<std::pair<size_t, size_t>> remove_indicies;
+        // Vector of <CID, IDX, Function>
+        std::vector<std::tuple<size_t, size_t, std::function<void()>>> remove_functions;
         std::vector<std::function<void()>> add_functions;
 
     public:
@@ -298,6 +298,8 @@ namespace ecs::world
         bitset mask() const;
         template <class... Ts>
         std::vector<std::tuple<Ts *...>> fetch();
+        template <class... Ts>
+        std::vector<std::tuple<Ts *...>> safe_fetch();
 
         class WorldBuilder;
         friend class WorldBuilder;
@@ -430,6 +432,39 @@ namespace ecs::world
                     auto tuple = std::make_tuple(this->get<Ts>(&e)...);
                     vec.push_back(tuple);
                 }
+            }
+        }
+        return std::move(vec);
+    }
+
+    /**
+     * @brief Builds a vector of tuples of pointers to components for systems to iterate over.
+     * 
+     * Systems work on a set of components <A, B, ...>, and are intended to run over a
+     * tuple of component pointers <A*, B*, ...>, where each element in the tuple belongs
+     * to asingle Entity. This function aims to construct the tuples of system_data and
+     * group them into a vector which can then be iterated over.
+     * 
+     * If an entity which has components <A, B, ...> has been flagged for removal, then
+     * the components <A, B, ...> are staged for inavlidation. Once all of an Entity's
+     * components have been removed by fetch<Ts...> calls, then it can be staged for
+     * removal entirely.
+     * 
+     * @tparam Ts - The set of components to be fetched.
+     * @return std::vector<std::tuple<Ts *...>> 
+     */
+    template <class... Ts>
+    std::vector<std::tuple<Ts *...>> World::safe_fetch()
+    {
+        std::vector<std::tuple<Ts *...>> vec;
+        bitset m = this->mask<Ts...>();
+        auto node = this->find<Entity>();
+        for (auto &e : *(node->iter<Entity>()))
+        {
+            if (e.has_valid_component(m))
+            {
+                auto tuple = std::make_tuple(this->get<Ts>(&e)...);
+                vec.push_back(tuple);
             }
         }
         return std::move(vec);
@@ -626,9 +661,6 @@ namespace ecs::world
         // Fetch the RegistryNode for the component
         RegistryNode *node_ptr = this->world_ptr->find<T>();
 
-        // Create a pair of the component index and the component id.
-        this->remove_indicies.push_back(std::make_pair(entity_component_index, cid));
-
         // Create a lambda function to delete the component instance, and remove the
         // entity's knowledge of the component.
         auto f = [node_ptr, entity_component_index, e, cid]() {
@@ -637,7 +669,7 @@ namespace ecs::world
         };
 
         // Add the lambda function to be called later paired with the component index.
-        this->remove_functions.push_back(std::make_pair(entity_component_index, std::move(f)));
+        this->remove_functions.push_back(std::make_tuple(cid, entity_component_index, std::move(f)));
     }
 
     /**
@@ -676,9 +708,6 @@ namespace ecs::world
         // Fetch the RegistryNode for the component
         RegistryNode *node_ptr = this->world_ptr->find<T>();
 
-        // Create a pair of the component index and the component id.
-        this->remove_indicies.push_back(std::make_pair(entity_component_index, cid));
-
         // Create a lambda function to delete the component instance, and remove the
         // entity's knowledge of the component.
         auto f = [node_ptr, entity_component_index, e, cid]() {
@@ -687,7 +716,7 @@ namespace ecs::world
         };
 
         // Add the lambda function to be called later paired with the component index.
-        this->remove_functions.push_back(std::make_pair(entity_component_index, std::move(f)));
+        this->remove_functions.push_back(std::make_tuple(cid, entity_component_index, std::move(f)));
     }
 
     /**
@@ -766,9 +795,6 @@ namespace ecs::world
         // Fetch the RegistryNode for the component
         RegistryNode *node_ptr = this->world_ptr->find<Entity>();
 
-        // Create a pair of the component index and the component id.
-        this->remove_indicies.push_back(std::make_pair(entity_component_index, cid));
-
         // Create a lambda function to delete the component instance, and remove the
         // entity's knowledge of the component.
         auto f = [node_ptr, entity_component_index, e, cid]() {
@@ -776,11 +802,11 @@ namespace ecs::world
         };
 
         // Add the lambda function to be called later paired with the component index.
-        this->remove_functions.push_back(std::make_pair(entity_component_index, std::move(f)));
+        this->remove_functions.push_back(std::make_tuple(cid, entity_component_index, std::move(f)));
     }
 
     /**
-     * @brief Performes all the removals from systems after their execution.
+     * @brief Performes all the removals and additions from systems after their execution
      */
     void WorldResource::merge()
     {
@@ -793,41 +819,50 @@ namespace ecs::world
         if (this->remove_functions.size() == 0)
             return;
 
-        // Create lambda functions for sorting the lists in index decending order.
-        auto function_sorting = [](std::pair<size_t, std::function<void()>> lhs, std::pair<size_t, std::function<void()>> rhs) {
-            return std::get<0>(lhs) > std::get<0>(rhs);
-        };
-        auto index_sorting = [](std::pair<size_t, size_t> lhs, std::pair<size_t, size_t> rhs) {
-            return std::get<0>(lhs) > std::get<0>(rhs);
+        /** 
+         * Create lambda function for sorting the list in cid decreasing order.
+         * If the cid is the same, then sort by idx in decreasing order.
+         * 
+         * It is important that for each Component the greatest indicies are removed
+         * first, because otherwise, the following indicies may no longer be correct.
+         * 
+         * It MUST be garanteed that the Entity Component is operated on last, else 
+         * it is possible that removing an Entity, would influence the pointers that are
+         * being used in these lambda functions. Because it is GUARANTEED that the Entity
+         * Component is registred first, it will ALWAYS have the lowest CID, thus it is 
+         * sufficient to operate on Components with decending CID.
+         */
+        auto function_order_sort = [](std::tuple<size_t, size_t, std::function<void()>> lhs, std::tuple<size_t, size_t, std::function<void()>> rhs) {
+            if (std::get<0>(lhs) > std::get<0>(rhs))
+                return true;
+            return std::get<1>(lhs) > std::get<1>(rhs);
         };
 
-        // Sort the lists in index decending order.
-        // Since these components are removed by index, it's important that components
-        // with the largest index are removed first. This is why these sorts are needed.
-        std::sort(this->remove_functions.begin(), this->remove_functions.end(), function_sorting);
-        std::sort(this->remove_indicies.begin(), this->remove_indicies.end(), index_sorting);
+        // Sort the list as described above.
+        std::sort(this->remove_functions.begin(), this->remove_functions.end(), function_order_sort);
 
-        // Actually remove all the components.
-        for (auto function_pair : this->remove_functions)
+        // Remove all the components staged for removal.
+        for (auto tuple : this->remove_functions)
         {
-            size_t idx = std::get<0>(function_pair);
-            auto f = std::get<1>(function_pair);
+            size_t cid = std::get<0>(tuple);
+            size_t idx = std::get<1>(tuple);
+            auto f = std::get<2>(tuple);
             f();
         }
 
         // Adjust indicies of every Entity effected.
         RegistryNode *entity_node = this->world_ptr->find<Entity>();
-
         for (auto &e : *(entity_node->iter<Entity>()))
         {
-            for (auto index_pair : this->remove_indicies)
+            for (auto tuple : this->remove_functions)
             {
-                size_t idx = std::get<0>(index_pair);
-                size_t cid = std::get<1>(index_pair);
+                size_t cid = std::get<0>(tuple);
+                size_t idx = std::get<1>(tuple);
                 // The component MUST be valid, otherwise it may have been removed already.
                 if (e.has_valid_component(cid))
                 {
                     size_t e_idx = e.get_component(cid);
+
                     if (e_idx > idx)
                     {
                         e.decrement_component(cid);
@@ -835,10 +870,8 @@ namespace ecs::world
                 }
             }
         }
-
         // Empty the lists for the next systems.
         this->remove_functions.clear();
-        this->remove_indicies.clear();
     }
 
 } // namespace ecs::world
@@ -863,34 +896,41 @@ namespace ecs::world
     {
         RegistryNode *world_res_node = this->find<WorldResource>();
         WorldResource *world_res = world_res_node->get<WorldResource>(0);
-        for (auto stage : this->systems)
+        for (auto &stage : this->systems)
         {
-            /**
-             * @brief Start a thread for every `stage` in the dispatcher
-             * 
-             * Safety:
-             *  - The DispatcherBuilder will ensure that systems will run after their
-             *    dependencies have finished executing. 
-             *  - It is the PROGRAMMER'S responsibility to ensure that the dependencies
-             *    of systems are properly specified.
-             * 
-             */
-            std::vector<std::thread> threads;
-            for (auto sys : stage)
+            if (stage.size() > 1)
             {
-                auto lambda_f = [sys](ecs::world::World *w) {
-                    sys->exec(w);
-                };
-                std::thread t(lambda_f, this);
-                threads.push_back(std::move(t));
-            }
+                /**
+                 * @brief Start a thread for every `stage` in the dispatcher
+                 * 
+                 * Safety:
+                 *  - The DispatcherBuilder will ensure that systems will run after their
+                 *    dependencies have finished executing. 
+                 *  - It is the PROGRAMMER'S responsibility to ensure that the dependencies
+                 *    of systems are properly specified.
+                 * 
+                 */
+                std::vector<std::thread> threads;
+                for (auto sys : stage)
+                {
+                    auto lambda_f = [sys](ecs::world::World *w) {
+                        sys->exec(w);
+                    };
+                    std::thread t(lambda_f, this);
+                    threads.push_back(std::move(t));
+                }
 
-            // Wait for each thread to join before moving to the next stage.
-            for (int i = 0; i < threads.size(); i++)
+                // Wait for each thread to join before moving to the next stage.
+                for (int i = 0; i < threads.size(); i++)
+                {
+                    threads.at(i).join();
+                }
+            }
+            else // If only one system in a stage, run in the main thread.
             {
-                threads.at(i).join();
+                for (auto sys : stage)
+                    sys->exec(this);
             }
-
             // Perform any removals required now that all threads have joined.
             world_res->merge();
         }

@@ -433,4 +433,69 @@ int main()
             std::cout << "----- End of Dispatch -----" << std::endl;
         }
     }
+
+    {
+        std::cout << "------------ Entity Removal Order ----------" << std::endl;
+        struct C1
+        {
+        };
+        struct C4
+        {
+        };
+
+        struct SysC1 : public System<C1>
+        {
+            void run(system_data) {}
+        } sys_c1;
+        struct SysC4 : public System<C4>
+        {
+            void run(system_data) {}
+        } sys_c4;
+
+        auto world = World::create()
+                         .with_component<C1>()
+                         .with_component<C4>()
+                         .with_component<ToRemove>()
+                         .build();
+
+        world.add_systems()
+            .add_system(&sys_c1, "C1", {})
+            .add_system(&sys_c4, "C4", {"C1"})
+            .done();
+
+        auto world_res = world.find<WorldResource>()->get<WorldResource>(0);
+
+        world.build_entity() // EID = 0;
+            .build();
+
+        world.build_entity() // EID = 1 (TARGET);
+            .with<C1>({})    // idx = 1
+            .build();
+
+        world.build_entity() // EID = 2
+            .with<C1>({})    // idx = 1
+            .build();
+
+        world.build_entity() // EID = 3
+            .with<C1>({})    // idx = 2
+            .build();
+
+        world.build_entity() // EID = 4 (TARGET)
+            .with<C1>({})    // idx = 3
+            .with<C4>({})    // idx = 0
+            .build();
+
+        world.build_entity() // EID = 5
+            .build();
+
+        world.build_entity() // EID = 6
+            .build();
+
+        Entity *e = world.find<Entity>()->get<Entity>(1);
+        world_res->remove_entity(e);
+        world.dispatch();
+        e = world.find<Entity>()->get<Entity>(4);
+        world_res->remove_entity(e);
+        world.dispatch();
+    }
 }

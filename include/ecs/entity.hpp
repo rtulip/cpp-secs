@@ -40,6 +40,7 @@ namespace ecs::entity
         bool has_component(size_t cid) const;
         bool has_valid_component(size_t cid) const;
         bool has_component(bitset mask) const;
+        bool has_valid_component(bitset mask) const;
         size_t get_component(size_t cid) const;
         size_t decrement_component(size_t cid);
         bool is_alive() const;
@@ -157,10 +158,22 @@ namespace ecs::entity
     }
 
     /**
+     * @brief Checks if the Entity has a valid component 
+     * 
+     * @param cid 
+     * @return true 
+     * @return false 
+     */
+    bool Entity::has_valid_component(bitset mask) const
+    {
+        return (this->valid & mask) == mask;
+    }
+
+    /**
      * @brief Getter function for the component index.
      * 
      * @param cid - The component id in question.
-     * @return size_t - THe index of the component.
+     * @return size_t - The index of the component.
      */
     size_t Entity::get_component(size_t cid) const
     {
