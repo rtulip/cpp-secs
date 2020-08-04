@@ -34,9 +34,15 @@ namespace ecs::dispatch
      */
     class Executable;
 
-    // A container for Executables which can be run in parallel
+    /*!
+     * @typedef std::Vector<Executable *> $DispatcherStage
+     * A container for Executables which can be run in parallel
+     */
     typedef std::vector<Executable *> DispatcherStage;
-    // A container of 'Stages' to be run in order.
+    /*!
+     * \typedef std::vector<DispatcherStage> DispatcherContainer
+     * A container of DispatcherStages to be run in order.
+     */
     typedef std::vector<DispatcherStage> DispatcherContainer;
 
     /**
@@ -183,6 +189,7 @@ namespace ecs::dispatch
 
 namespace ecs::world
 {
+
     class World;
 
     /**
