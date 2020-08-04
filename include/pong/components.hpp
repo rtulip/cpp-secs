@@ -2,6 +2,7 @@
 #define ecs_pong_components_hpp
 #include <cstddef>
 #include <string>
+#include <chrono>
 
 namespace pong::components
 {
@@ -16,7 +17,7 @@ namespace pong::components
     };
 
     /**
-     * @brief Velocity Component
+     * @brief 
      * 
      */
     struct Velocity
@@ -89,6 +90,26 @@ namespace pong::components
     {
         std::string str;
         void *font;
+    };
+
+    /**
+     * @brief FPS Counter Component
+     * 
+     * Used for seeing how many frames per second are being computed. 
+     * 
+     */
+    struct FPSCounter
+    {
+        using Clock = std::chrono::steady_clock;
+        std::chrono::time_point<Clock> prev_time;
+    };
+
+    /**
+     * @brief Component for counting the number of entities at a given moment.
+     * 
+     */
+    struct EntityCounter
+    {
     };
 } // namespace pong::components
 

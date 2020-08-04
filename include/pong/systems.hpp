@@ -30,8 +30,8 @@ namespace pong::systems
         ~MovementSystem() = default;
         void run(system_data data)
         {
-            auto *pos = std::get<0>(data);
-            auto *vel = std::get<1>(data);
+            auto pos = std::get<0>(data);
+            auto vel = std::get<1>(data);
             pos->x += vel->dx;
             pos->y += vel->dy;
         }
@@ -448,6 +448,33 @@ namespace pong::systems
                 }
                 keyboard_res->SHOULD_SPAWN_BALL = false;
             }
+        }
+    };
+
+    struct FPSSystem : public ecs::system::System<pc::FPSCounter, pc::Text>
+    {
+        void run(system_data data)
+        {
+            using namespace std::literals::chrono_literals;
+            auto fps_count = std::get<0>(data);
+            auto text = std::get<1>(data);
+            auto this_frame = pc::FPSCounter::Clock::now();
+            std::chrono::nanoseconds delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(this_frame - fps_count->prev_time);
+            fps_count->prev_time = this_frame;
+
+            text->str = "FPS: " + std::to_string((int)(1 / (delta_t.count() * 1.0e-9)));
+        }
+    };
+
+    struct EntityCountSystem : public ecs::system::System<pc::EntityCounter, pc::Text, ecs::world::WorldResource>
+    {
+        void run(system_data data)
+        {
+            auto text = std::get<1>(data);
+            auto world_res = std::get<2>(data);
+
+            size_t entity_count = world_res->world()->find<ecs::entity::Entity>()->size<ecs::entity::Entity>();
+            text->str = std::to_string(entity_count) + " Entities";
         }
     };
 } // namespace pong::systems

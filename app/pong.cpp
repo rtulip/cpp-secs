@@ -22,6 +22,8 @@ BallWallCollisionSystem ball_wall_sys(WINDOW_SIZE, WINDOW_SIZE);
 BallPaddleCollisionSystem ball_paddle_sys(M_PI / 4.0, 0.5);
 SpawnBallSystem spawn_ball_sys(100);
 KeyboardSystem keyboard_sys(1.0);
+FPSSystem fps_system;
+EntityCountSystem entity_count_sys;
 KeyboardResource *keyboard_res;
 
 // Create a world Registering all the components and adding resources.
@@ -34,6 +36,8 @@ auto world = ecs::world::World::create()
                  .with_component<Ball>()
                  .with_component<BallSpawner>()
                  .with_component<Text>()
+                 .with_component<FPSCounter>()
+                 .with_component<EntityCounter>()
                  .add_resource(KeyboardResource('w', 's', 'i', 'k', ' '))
                  .add_resource<ScoreResource>({0, 0})
                  .build();
@@ -46,6 +50,7 @@ auto world = ecs::world::World::create()
  */
 void setup_world()
 {
+    // Left Paddle (Red)
     world.build_entity()
         .with<Position>({-400.0, 100.0})
         .with<Velocity>({0.0, 0.0})
@@ -54,6 +59,7 @@ void setup_world()
         .with<Side>(Side::LEFT)
         .build();
 
+    // Right Paddle (Blue)
     world.build_entity()
         .with<Position>({350, 100})
         .with<Velocity>({0.0, 0.0})
@@ -62,6 +68,7 @@ void setup_world()
         .with<Side>(Side::RIGHT)
         .build();
 
+    // Left Paddle Score
     world.build_entity()
         .with<Position>({-250.0, 400.0})
         .with<Color3>({0.0, 0.0, 0.0})
@@ -69,6 +76,7 @@ void setup_world()
         .with<Text>({"", GLUT_BITMAP_TIMES_ROMAN_24})
         .build();
 
+    // Right Paddle Score
     world.build_entity()
         .with<Position>({250.0, 400.0})
         .with<Color3>({0.0, 0.0, 1.0})
@@ -76,26 +84,47 @@ void setup_world()
         .with<Text>({"", GLUT_BITMAP_TIMES_ROMAN_24})
         .build();
 
+    // Ball Spawner
     world.build_entity()
         .with<BallSpawner>({})
         .build();
 
+    // Text to instruct how to make a ball
     world.build_entity()
         .with<Position>({-250.0, -250.0})
         .with<Color3>({0.0, 1.0, 0.0})
         .with<Text>({"Press Space to make a ball!", GLUT_BITMAP_HELVETICA_18})
         .build();
 
+    // FPS Counter
+    world.build_entity()
+        .with<Position>({-450.0, -450.0})
+        .with<Color3>({0.0, 0.0, 0.0})
+        .with<Text>({"", GLUT_BITMAP_TIMES_ROMAN_10})
+        .with<FPSCounter>({FPSCounter::Clock::now()})
+        .build();
+
+    // Entity Counter
+    world.build_entity()
+        .with<Position>({250.0, -450.0})
+        .with<Color3>({0.0, 0.0, 0.0})
+        .with<Text>({"", GLUT_BITMAP_TIMES_ROMAN_10})
+        .with<EntityCounter>({})
+        .build();
+
+    // Add Systems to the world.
     world.add_systems()
-        .add_system(&text_renderer, "TextRenderingSystem", {})                                  // 0
-        .add_system(&renderer, "RenderingSystem", {"TextRenderingSystem"})                      // 1
-        .add_system(&keyboard_sys, "KeyboardSystem", {"RenderingSystem"})                       // 2
-        .add_system(&spawn_ball_sys, "SpawnBallSystem", {"KeyboardSystem"})                     // 3
-        .add_system(&move_sys, "MovementSystem", {"SpawnBallSystem"})                           // 4
-        .add_system(&ball_wall_sys, "BallWallCollisionSystem", {"MovementSystem"})              // 5
-        .add_system(&ball_paddle_sys, "BallPaddleCollisionSystem", {"BallWallCollisionSystem"}) // 6
-        .add_system(&wall_sys, "PaddleWallCollisionSystem", {"BallWallCollisionSystem"})        // 6
-        .add_system(&score_update_system, "UpdateScoreTextSystem", {"BallWallCollisionSystem"}) // 6
+        .add_system(&text_renderer, "TextRenderingSystem", {})                                                               // 0
+        .add_system(&renderer, "RenderingSystem", {"TextRenderingSystem"})                                                   // 1
+        .add_system(&keyboard_sys, "KeyboardSystem", {"RenderingSystem"})                                                    // 2
+        .add_system(&spawn_ball_sys, "SpawnBallSystem", {"KeyboardSystem"})                                                  // 3
+        .add_system(&move_sys, "MovementSystem", {"SpawnBallSystem"})                                                        // 4
+        .add_system(&ball_wall_sys, "BallWallCollisionSystem", {"MovementSystem"})                                           // 5
+        .add_system(&wall_sys, "PaddleWallCollisionSystem", {"MovementSystem"})                                              // 5
+        .add_system(&ball_paddle_sys, "BallPaddleCollisionSystem", {"PaddleWallCollisionSystem", "BallWallCollisionSystem"}) // 6
+        .add_system(&score_update_system, "UpdateScoreTextSystem", {"BallWallCollisionSystem"})                              // 6
+        .add_system(&entity_count_sys, "EntityCountSystem", {"BallWallCollisionSystem", "SpawnBallSystem"})                  // 6
+        .add_system(&fps_system, "FPSSystem", {"BallPaddleCollisionSystem"})                                                 // 7
         .done();
 
     keyboard_res = world.find<KeyboardResource>()->get<KeyboardResource>(0);
@@ -117,13 +146,8 @@ void display()
     world.dispatch();
 
     glutSwapBuffers();
-};
-
-void timer(int)
-{
     glutPostRedisplay();
-    glutTimerFunc(1, timer, 0);
-}
+};
 
 /**
  * @brief Callback function for handling keyboard input
@@ -168,7 +192,6 @@ int main(int argc, char *argv[])
 
     setup();
     glutDisplayFunc(display);
-    glutTimerFunc(1, timer, 0);
     glutKeyboardFunc(handle_key_press);
     glutKeyboardUpFunc(handle_key_release);
 

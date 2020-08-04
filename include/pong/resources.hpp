@@ -1,5 +1,6 @@
 #ifndef ecs_pong_resource_hpp
 #define ecs_pong_resource_hpp
+#include <chrono>
 
 namespace pong::resource
 {
