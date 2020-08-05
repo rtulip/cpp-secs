@@ -16,3 +16,11 @@ within your favorite browser after building the documentation.
 
 To run a demonstration of the Pong game made with the ECS, use the commands:
     $INSTALL_DIR/bin/demo
+
+Note: the demo will run until the GUI is closed.
+
+Demo Controls:
+    Left player Controls: W (up) and S (down)
+    Right player controls: I (up) and K (down)
+    Make a ball: spacebar 
+    

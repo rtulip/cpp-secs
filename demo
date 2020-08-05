@@ -11,6 +11,10 @@ cmd_dir=$(dirname "$0") || panic "cannot determine command directory"
 pong_program="$cmd_dir/pong"
 
 echo "Starting Pong Game!"
+echo "The demo will run until the GUI is closed."
+echo "'W' and 'S' keys move the left paddle"
+echo "'I' and 'K' keys move the right paddle"
+echo "Press space to make a ball. There can be up to 100 balls at a time"
 $pong_program || panic "Pong Program Failed. To run the demonstartion please follow the instructions in the README.txt"
 
 echo "Done demo. Thank you!"
