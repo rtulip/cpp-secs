@@ -1,0 +1,16 @@
+#! /usr/bin/env bash
+
+panic()
+{
+	echo "ERROR: $@"
+	exit 1
+}
+
+cmd_dir=$(dirname "$0") || panic "cannot determine command directory"
+
+pong_program="$cmd_dir/pong"
+
+echo "Starting Pong Game!"
+$pong_program || panic "Pong Program Failed. To run the demonstartion please follow the instructions in the README.txt"
+
+echo "Done demo. Thank you!"

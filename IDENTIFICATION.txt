@@ -1,0 +1,7 @@
+name "Robert Tulip"
+student_id "V00846133"
+email "rtulip@uvic.ca"
+term "2020-05"
+course "SENG475"
+section "T01"
+assignment "cpp_project"
