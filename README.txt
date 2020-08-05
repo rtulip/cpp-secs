@@ -7,12 +7,9 @@ To build and install the software use the commands:
     cmake $TOP_DIR -Btmp_cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR
     cmake --build tmp_cmake --clean-first --target install
 
-If Doxygen is installed, and you'd like to browse through the documentation in Firefox use the commands:
-    cd $TOP_DIR
-    doxygen Doxyfile
+If you'd like to read the documentation generated with Doxygen, open $TOP_DIR/docs/html/index.html
+from within your favorite browser after building the documentation. eg.
     firefox $TOP_DIR/docs/html/index.html
-If you would rather use a browser other than Firefox, open $TOP_DIR/docs/html/index.html from 
-within your favorite browser after building the documentation. 
 
 To run a demonstration of the Pong game made with the ECS, use the commands:
     $INSTALL_DIR/bin/demo
