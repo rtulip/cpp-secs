@@ -19,8 +19,8 @@ UpdateScoreTextSystem score_update_system;
 MovementSystem move_sys;
 PaddleWallCollisionSystem wall_sys(WINDOW_SIZE, WINDOW_SIZE);
 BallWallCollisionSystem ball_wall_sys(WINDOW_SIZE, WINDOW_SIZE);
-BallPaddleCollisionSystem ball_paddle_sys(M_PI / 4.0, 0.5);
-SpawnBallSystem spawn_ball_sys(100);
+BallPaddleCollisionSystem ball_paddle_sys(M_PI / 4.0);
+SpawnBallSystem spawn_ball_sys(100, 0.5, M_PI / 4.0);
 KeyboardSystem keyboard_sys(1.0);
 FPSSystem fps_system;
 EntityCountSystem entity_count_sys;
@@ -54,7 +54,7 @@ void setup_world()
     world.build_entity()
         .with<Position>({-400.0, 100.0})
         .with<Velocity>({0.0, 0.0})
-        .with<Rectangle>({50.0, 75.0})
+        .with<Rectangle>({50.0, 200.0})
         .with<Color3>({1.0f, 0.0f, 0.0f})
         .with<Side>(Side::LEFT)
         .build();
@@ -79,7 +79,7 @@ void setup_world()
     // Right Paddle Score
     world.build_entity()
         .with<Position>({250.0, 400.0})
-        .with<Color3>({0.0, 0.0, 1.0})
+        .with<Color3>({0.0, 0.0, 0.0})
         .with<Side>(Side::RIGHT)
         .with<Text>({"", GLUT_BITMAP_TIMES_ROMAN_24})
         .build();
@@ -92,8 +92,8 @@ void setup_world()
     // Text to instruct how to make a ball
     world.build_entity()
         .with<Position>({-250.0, -250.0})
-        .with<Color3>({0.0, 1.0, 0.0})
-        .with<Text>({"Press Space to make a ball!", GLUT_BITMAP_HELVETICA_18})
+        .with<Color3>({0.0, 0.0, 0.0})
+        .with<Text>({"Press Space to make a ball!", GLUT_BITMAP_TIMES_ROMAN_24})
         .build();
 
     // FPS Counter

@@ -7,6 +7,7 @@
 #include <ecs/world.hpp>
 #include <GL/glut.h>
 #include <math.h>
+#include <random>
 
 namespace pc = pong::components;
 namespace pr = pong::resource;
@@ -135,10 +136,9 @@ namespace pong::systems
     {
     private:
         float MAX_BOUNCE_ANGLE;
-        float BALL_SPEED;
 
     public:
-        BallPaddleCollisionSystem(float max_bounce_angle, float ball_speed) : MAX_BOUNCE_ANGLE(max_bounce_angle), BALL_SPEED(ball_speed) {}
+        BallPaddleCollisionSystem(float max_bounce_angle) : MAX_BOUNCE_ANGLE(max_bounce_angle) {}
         ~BallPaddleCollisionSystem() = default;
         /**
          * @brief Checks if two rectangles are colliding.
@@ -189,6 +189,7 @@ namespace pong::systems
                 auto ball_pos = std::get<0>(ball);
                 auto ball_rect = std::get<1>(ball);
                 auto ball_vel = std::get<2>(ball);
+                auto ball_speed = std::get<3>(ball);
 
                 if (overlap(paddle_pos, paddle_rect, ball_pos, ball_rect))
                 {
@@ -220,8 +221,8 @@ namespace pong::systems
                     }
 
                     // Set the new velocity
-                    float new_x_vel = BALL_SPEED * cos(MAX_BOUNCE_ANGLE * ball_y_relative_to_paddle_normalized) * ball_new_vel_dx_sign;
-                    float new_y_vel = BALL_SPEED * sin(MAX_BOUNCE_ANGLE * ball_y_relative_to_paddle_normalized);
+                    float new_x_vel = ball_speed->speed * cos(MAX_BOUNCE_ANGLE * ball_y_relative_to_paddle_normalized) * ball_new_vel_dx_sign;
+                    float new_y_vel = ball_speed->speed * sin(MAX_BOUNCE_ANGLE * ball_y_relative_to_paddle_normalized);
                     *ball_vel = {new_x_vel, new_y_vel};
                 }
             }
@@ -422,10 +423,16 @@ namespace pong::systems
     {
     private:
         size_t MAX_BALLS;
+        float BALL_SPEED;
+        float MAX_BALL_ANGLE;
 
     public:
-        SpawnBallSystem(int max_balls) : MAX_BALLS(max_balls) {}
+        SpawnBallSystem(int max_balls, float ball_speed, float angle) : MAX_BALLS(max_balls), BALL_SPEED(ball_speed), MAX_BALL_ANGLE(angle) {}
         ~SpawnBallSystem() = default;
+        float generate_random_angle()
+        {
+            return static_cast<float>(rand() / static_cast<float>(RAND_MAX / this->MAX_BALL_ANGLE));
+        }
         void run(system_data data)
         {
             auto keyboard_res = std::get<0>(data);
@@ -437,13 +444,35 @@ namespace pong::systems
                 ball_node = world_res->world()->find<pc::Ball>();
                 if (ball_node->size<pc::Ball>() < MAX_BALLS)
                 {
+                    float angle = generate_random_angle();
+                    int x_sign = rand() % 2;
+                    int y_sign = rand() % 2;
+                    float x_vel, y_vel;
+
+                    if (x_sign < 1)
+                    {
+                        x_vel = this->BALL_SPEED * cos(angle);
+                    }
+                    else
+                    {
+                        x_vel = -this->BALL_SPEED * cos(angle);
+                    }
+
+                    if (y_sign < 1)
+                    {
+                        y_vel = this->BALL_SPEED * sin(angle);
+                    }
+                    else
+                    {
+                        y_vel = -this->BALL_SPEED * sin(angle);
+                    }
                     world_res->world()
                         ->build_entity()
                         .with<pc::Position>({0, 0})
-                        .with<pc::Velocity>({0.25, 0.5})
+                        .with<pc::Velocity>({x_vel, y_vel})
                         .with<pc::Rectangle>({25.0, 25.0})
                         .with<pc::Color3>({0.0, 0.0, 0.0})
-                        .with<pc::Ball>({})
+                        .with<pc::Ball>({BALL_SPEED})
                         .build();
                 }
                 keyboard_res->SHOULD_SPAWN_BALL = false;

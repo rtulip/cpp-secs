@@ -68,6 +68,7 @@ namespace pong::components
      */
     struct Ball
     {
+        float speed;
     };
 
     /**
