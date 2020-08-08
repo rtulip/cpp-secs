@@ -386,11 +386,22 @@ namespace ecs::registry
         return this->cast<T>();
     }
 
+    /**
+     * @brief Getter function for the data hash code
+     * 
+     * @return size_t - The data hash code
+     */
     size_t RegistryNode::get_hash()
     {
         return this->data_hash_code;
     }
 
+    /**
+     * @brief Function to check if a RegistryNode is a resource
+     * 
+     * @return true
+     * @return false 
+     */
     bool RegistryNode::is_resource()
     {
         return this->NodeType == RegistryNode::Type::Resource;

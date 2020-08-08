@@ -117,11 +117,11 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a77b0f6ead9b2af764049140c82c41a8c"><td class="memTemplItemLeft" align="right" valign="top">std::shared_ptr&lt; std::vector&lt; T &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecs_1_1registry_1_1_registry_node.html#a77b0f6ead9b2af764049140c82c41a8c">iter</a> ()</td></tr>
 <tr class="memdesc:a77b0f6ead9b2af764049140c82c41a8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A safe accessor to the Registry node data vector.  <a href="classecs_1_1registry_1_1_registry_node.html#a77b0f6ead9b2af764049140c82c41a8c">More...</a><br /></td></tr>
 <tr class="separator:a77b0f6ead9b2af764049140c82c41a8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6727c51e7a038e62720cbe3af83cd12c"><td class="memItemLeft" align="right" valign="top"><a id="a6727c51e7a038e62720cbe3af83cd12c"></a>
-size_t&#160;</td><td class="memItemRight" valign="bottom"><b>get_hash</b> ()</td></tr>
+<tr class="memitem:a6727c51e7a038e62720cbe3af83cd12c"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecs_1_1registry_1_1_registry_node.html#a6727c51e7a038e62720cbe3af83cd12c">get_hash</a> ()</td></tr>
+<tr class="memdesc:a6727c51e7a038e62720cbe3af83cd12c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Getter function for the data hash code.  <a href="classecs_1_1registry_1_1_registry_node.html#a6727c51e7a038e62720cbe3af83cd12c">More...</a><br /></td></tr>
 <tr class="separator:a6727c51e7a038e62720cbe3af83cd12c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1a9769be0c34b9f1d45ad21aa6550d78"><td class="memItemLeft" align="right" valign="top"><a id="a1a9769be0c34b9f1d45ad21aa6550d78"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_resource</b> ()</td></tr>
+<tr class="memitem:a1a9769be0c34b9f1d45ad21aa6550d78"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecs_1_1registry_1_1_registry_node.html#a1a9769be0c34b9f1d45ad21aa6550d78">is_resource</a> ()</td></tr>
+<tr class="memdesc:a1a9769be0c34b9f1d45ad21aa6550d78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to check if a <a class="el" href="classecs_1_1registry_1_1_registry_node.html" title="A non-templated data structure to hold a generic type.">RegistryNode</a> is a resource.  <a href="classecs_1_1registry_1_1_registry_node.html#a1a9769be0c34b9f1d45ad21aa6550d78">More...</a><br /></td></tr>
 <tr class="separator:a1a9769be0c34b9f1d45ad21aa6550d78"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
@@ -354,6 +354,48 @@ template&lt;class T &gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>T* - A pointer to the T. </dd></dl>
+
+</div>
+</div>
+<a id="a6727c51e7a038e62720cbe3af83cd12c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6727c51e7a038e62720cbe3af83cd12c">&#9670;&nbsp;</a></span>get_hash()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t ecs::registry::RegistryNode::get_hash </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Getter function for the data hash code. </p>
+<dl class="section return"><dt>Returns</dt><dd>size_t - The data hash code </dd></dl>
+
+</div>
+</div>
+<a id="a1a9769be0c34b9f1d45ad21aa6550d78"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1a9769be0c34b9f1d45ad21aa6550d78">&#9670;&nbsp;</a></span>is_resource()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ecs::registry::RegistryNode::is_resource </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function to check if a <a class="el" href="classecs_1_1registry_1_1_registry_node.html" title="A non-templated data structure to hold a generic type.">RegistryNode</a> is a resource. </p>
+<dl class="section return"><dt>Returns</dt><dd>true </dd>
+<dd>
+false </dd></dl>
 
 </div>
 </div>

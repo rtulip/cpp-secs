@@ -122,8 +122,8 @@ $(function() {
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        std::shared_ptr&lt;std::vector&lt;T&gt;&gt; <a class="code" href="classecs_1_1registry_1_1_registry_node.html#a77b0f6ead9b2af764049140c82c41a8c">iter</a>();</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        <span class="keywordtype">size_t</span> get_hash();</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        <span class="keywordtype">bool</span> is_resource();</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        <span class="keywordtype">size_t</span> <a class="code" href="classecs_1_1registry_1_1_registry_node.html#a6727c51e7a038e62720cbe3af83cd12c">get_hash</a>();</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        <span class="keywordtype">bool</span> <a class="code" href="classecs_1_1registry_1_1_registry_node.html#a1a9769be0c34b9f1d45ad21aa6550d78">is_resource</a>();</div>
 <div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    };</div>
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    RegistryNode::RegistryNode(<span class="keywordtype">size_t</span> hash_code) : data_hash_code(hash_code)</div>
@@ -244,18 +244,18 @@ $(function() {
 <div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;        <span class="keywordflow">return</span> this-&gt;cast&lt;T&gt;();</div>
 <div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;    }</div>
 <div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160; </div>
-<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;    <span class="keywordtype">size_t</span> RegistryNode::get_hash()</div>
-<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;    {</div>
-<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;        <span class="keywordflow">return</span> this-&gt;data_hash_code;</div>
-<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;    }</div>
-<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160; </div>
-<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;    <span class="keywordtype">bool</span> RegistryNode::is_resource()</div>
+<div class="line"><a name="l00394"></a><span class="lineno"><a class="line" href="classecs_1_1registry_1_1_registry_node.html#a6727c51e7a038e62720cbe3af83cd12c">  394</a></span>&#160;    <span class="keywordtype">size_t</span> <a class="code" href="classecs_1_1registry_1_1_registry_node.html#a6727c51e7a038e62720cbe3af83cd12c">RegistryNode::get_hash</a>()</div>
 <div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;    {</div>
-<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;        <span class="keywordflow">return</span> this-&gt;NodeType == RegistryNode::Type::Resource;</div>
+<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;        <span class="keywordflow">return</span> this-&gt;data_hash_code;</div>
 <div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;    }</div>
 <div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160; </div>
-<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;} <span class="comment">// namespace ecs::registry</span></div>
-<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00405"></a><span class="lineno"><a class="line" href="classecs_1_1registry_1_1_registry_node.html#a1a9769be0c34b9f1d45ad21aa6550d78">  405</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classecs_1_1registry_1_1_registry_node.html#a1a9769be0c34b9f1d45ad21aa6550d78">RegistryNode::is_resource</a>()</div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;    {</div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;        <span class="keywordflow">return</span> this-&gt;NodeType == RegistryNode::Type::Resource;</div>
+<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;    }</div>
+<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160; </div>
+<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;} <span class="comment">// namespace ecs::registry</span></div>
+<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a77b0f6ead9b2af764049140c82c41a8c"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a77b0f6ead9b2af764049140c82c41a8c">ecs::registry::RegistryNode::iter</a></div><div class="ttdeci">std::shared_ptr&lt; std::vector&lt; T &gt; &gt; iter()</div><div class="ttdoc">A safe accessor to the Registry node data vector.</div><div class="ttdef"><b>Definition:</b> registry.hpp:384</div></div>
 <div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a618ffa51a954c66e4914507c2b3794a0"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a618ffa51a954c66e4914507c2b3794a0">ecs::registry::RegistryNode::set</a></div><div class="ttdeci">void set(size_t i, T &amp;&amp;t)</div><div class="ttdoc">A safe setter function to data[i].</div><div class="ttdef"><b>Definition:</b> registry.hpp:340</div></div>
@@ -265,6 +265,8 @@ $(function() {
 <div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a4b415a6aaeb1f41c5ab99b81559e1cf4"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a4b415a6aaeb1f41c5ab99b81559e1cf4">ecs::registry::RegistryNode::create_resource</a></div><div class="ttdeci">static RegistryNode create_resource(T &amp;t)</div><div class="ttdoc">A safe constructor of a Resource RegistryNode.</div><div class="ttdef"><b>Definition:</b> registry.hpp:152</div></div>
 <div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a52654f8580fd419fadd75dc2af0b6c5a"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a52654f8580fd419fadd75dc2af0b6c5a">ecs::registry::RegistryNode::push</a></div><div class="ttdeci">void push(T &amp;&amp;t)</div><div class="ttdoc">A safe function to add a T to the end of the data vector.</div><div class="ttdef"><b>Definition:</b> registry.hpp:258</div></div>
 <div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_afbc20bc48f92623ee9bd46cd41299e4b"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#afbc20bc48f92623ee9bd46cd41299e4b">ecs::registry::RegistryNode::create</a></div><div class="ttdeci">static RegistryNode create()</div><div class="ttdoc">A safe constructor of a Component RegistryNode.</div><div class="ttdef"><b>Definition:</b> registry.hpp:119</div></div>
+<div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a1a9769be0c34b9f1d45ad21aa6550d78"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a1a9769be0c34b9f1d45ad21aa6550d78">ecs::registry::RegistryNode::is_resource</a></div><div class="ttdeci">bool is_resource()</div><div class="ttdoc">Function to check if a RegistryNode is a resource.</div><div class="ttdef"><b>Definition:</b> registry.hpp:405</div></div>
+<div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a6727c51e7a038e62720cbe3af83cd12c"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a6727c51e7a038e62720cbe3af83cd12c">ecs::registry::RegistryNode::get_hash</a></div><div class="ttdeci">size_t get_hash()</div><div class="ttdoc">Getter function for the data hash code.</div><div class="ttdef"><b>Definition:</b> registry.hpp:394</div></div>
 <div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html">ecs::registry::RegistryNode</a></div><div class="ttdoc">A non-templated data structure to hold a generic type.</div><div class="ttdef"><b>Definition:</b> registry.hpp:42</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
