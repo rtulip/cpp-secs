@@ -195,9 +195,9 @@
  * ecs::world::World functions can be used within Systems to ensure that behaviour is 
  * well defined. By exposing the World* to systems, it may be possible for the programmer
  * to cause undefined behaviour. For the moment, functions which operate on the world
- * have been labeld as 'System Safe' if they are safe to use in a System, and it is the 
- * programmers responsibility to ensure that only 'System Safe' functions are used in
- * System's run function.
+ * have been labeld as not-'System Safe' if they are unsafe to use in a System, and it
+ * is the programmers responsibility to ensure that only 'System Safe' functions are used
+ * in System's run function.
  * 
  * Below is an example of a system which uses the ecs::world::WorldResource to remove all
  * Entities which have a 'ToRemove' component from the ecs::world::World.

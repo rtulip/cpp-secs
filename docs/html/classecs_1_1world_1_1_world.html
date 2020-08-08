@@ -240,6 +240,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>WorldResource</b></t
 </div><div class="memdoc">
 
 <p>Runs each system which has been added to the world in order. </p>
+<p>Note: This function <em>NOT</em> System-Safe. Calling this functio using the <a class="el" href="classecs_1_1world_1_1_world_resource.html" title="A wrapper around a World* for use as a resource.">WorldResource</a> from within a function could easily break the mutual exclusion guarantees of System Dependencies. </p>
 <p>Start a thread for every <code>stage</code> in the dispatcher</p>
 <p>Safety:</p><ul>
 <li>The DispatcherBuilder will ensure that systems will run after their dependencies have finished executing.</li>

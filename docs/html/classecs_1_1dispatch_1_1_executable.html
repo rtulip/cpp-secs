@@ -74,6 +74,11 @@ $(function() {
 <div class="title">ecs::dispatch::Executable Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Executables are an abstarct class which defines an exec function.  
+ <a href="classecs_1_1dispatch_1_1_executable.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="world__class_8hpp_source.html">world_class.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for ecs::dispatch::Executable:</div>
 <div class="dyncontent">
@@ -86,7 +91,11 @@ Public Member Functions</h2></td></tr>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>exec</b> (<a class="el" href="classecs_1_1world_1_1_world.html">ecs::world::World</a> *)=0</td></tr>
 <tr class="separator:a83585ed93c05d60768823fcbde5b751b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this class was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Executables are an abstarct class which defines an exec function. </p>
+<p>The idea behind this is that Systems require a parameter pack, thus Systems which require different parameter types, cannot be stored in a container (easily).</p>
+<p>Regardless of the parameters the Systems use, the functionality to fetch and run each system can be abstracted away into a single exec() function. That is what this abstract class provides. Now, a dispatcher can be a container of Executable* and call the exec() function as defined by the System class, meaning the user does not have to do any additional implementation beyond the System::run() function. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/ecs/world/<a class="el" href="world__class_8hpp_source.html">world_class.hpp</a></li>
 </ul>
 </div><!-- contents -->

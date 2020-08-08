@@ -19,19 +19,6 @@ using ecs::registry::RegistryNode;
 
 namespace ecs::dispatch
 {
-    /**
-     * @brief Executables are an abstarct class which defines an exec function
-     * 
-     * The idea behind this is that Systems require a parameter pack, thus Systems which
-     * require different parameter types, cannot be stored in a container (easily). 
-     * 
-     * Regardless of the parameters the Systems use, the functionality to fetch and run
-     * each system can be abstracted away into a single exec() function. That is what 
-     * this abstract class provides. Now, a dispatcher can be a container of Executable*
-     * and call the exec() function as defined by the System class, meaning the user does
-     * not have to do any additional implementation beyond the System::run() function. 
-     * 
-     */
     class Executable;
 
     /*!
@@ -885,6 +872,20 @@ namespace ecs::world
 
 namespace ecs::dispatch
 {
+
+    /**
+     * @brief Executables are an abstarct class which defines an exec function
+     * 
+     * The idea behind this is that Systems require a parameter pack, thus Systems which
+     * require different parameter types, cannot be stored in a container (easily). 
+     * 
+     * Regardless of the parameters the Systems use, the functionality to fetch and run
+     * each system can be abstracted away into a single exec() function. That is what 
+     * this abstract class provides. Now, a dispatcher can be a container of Executable*
+     * and call the exec() function as defined by the System class, meaning the user does
+     * not have to do any additional implementation beyond the System::run() function. 
+     * 
+     */
     class Executable
     {
     public:
@@ -898,6 +899,9 @@ namespace ecs::world
     /**
      * @brief Runs each system which has been added to the world in order.
      * 
+     * Note: This function *NOT* System-Safe.
+     *      Calling this functio using the WorldResource from within a function could
+     *      easily break the mutual exclusion guarantees of System Dependencies.
      */
     void World::dispatch()
     {
