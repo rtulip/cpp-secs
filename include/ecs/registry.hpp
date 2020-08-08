@@ -112,7 +112,7 @@ namespace ecs::registry
      *      
      *      The third invariant is upheld because the data_hash_code is a const member.
      * 
-     * @tparam T - The type to be assciated with the new RegistryNode
+     * @tparam T - The type to be associated with the new RegistryNode
      * @return RegistryNode - The RegistryNode associated with the type T.
      */
     template <class T>
@@ -145,7 +145,7 @@ namespace ecs::registry
      *      Additionally, t is moved into the node here, thus upholding the existance of
      *      the 0th element in the vector.
      * 
-     * @tparam T - The type to be assciated with the new RegistryNode
+     * @tparam T - The type to be associated with the new RegistryNode
      * @return RegistryNode - The RegistryNode associated with the type T.
      */
     template <class T>
@@ -179,7 +179,7 @@ namespace ecs::registry
      *      Additionally, t is moved into the node here, thus upholding the existance of
      *      the 0th element in the vector.
      * 
-     * @tparam T - The type to be assciated with the new RegistryNode
+     * @tparam T - The type to be associated with the new RegistryNode
      * @return RegistryNode - The RegistryNode associated with the type T.
      */
     template <class T>
@@ -274,7 +274,7 @@ namespace ecs::registry
      * 
      * TODO: Check Bounds.
      * 
-     * @tparam T 
+     * @tparam T - The type to be associated with the new RegistryNode
      * @param i - The index.
      * @return T* - A pointer to the T.
      */
@@ -311,7 +311,7 @@ namespace ecs::registry
      * 
      *      Additionally, no operation is done on a RegistryNode of Resource type, thus
      *      upholding the requirement that there is ALWAYS a 0th element in the node.
-     * @tparam T  
+     * @tparam T - The type to be associated with the new RegistryNode
      * @param i - The index
      */
     template <class T>
@@ -332,7 +332,7 @@ namespace ecs::registry
      *      This function uses cast<T> to access the RegistryNode data pointer, thus all
      *      invariants are upheld.
      * 
-     * @tparam T 
+     * @tparam T - The type to be associated with the new RegistryNode
      * @param i - The index.
      * @param t - The T instance.
      */
@@ -357,7 +357,7 @@ namespace ecs::registry
      *      This function uses cast<T> to access the RegistryNode data pointer, thus all
      *      invariants are upheld
      * 
-     * @tparam T 
+     * @tparam T - The type to be associated with the new RegistryNode
      * @return size_t - the number of T in the vector.
      */
     template <class T>
@@ -377,7 +377,7 @@ namespace ecs::registry
      *      This function uses cast<T> to access the RegistryNode data pointer, thus all
      *      invariants are upheld.
      * 
-     * @tparam T 
+     * @tparam T - The type to be associated with the new RegistryNode
      * @return std::shared_ptr<std::vector<T>> 
      */
     template <class T>
