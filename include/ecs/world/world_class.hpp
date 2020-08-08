@@ -311,8 +311,7 @@ namespace ecs::world
      * It is assumed that each Entity has a unique id, and that this function is used to 
      * generate the eid for the Entity.
      * 
-     * TODO: Need to have a better way to distribute and track active entitiy id's, but
-     * for the moment this will do. 
+     * TODO: Create a more sophisciated way to create and track eids.
      * 
      * @return size_t 
      */
@@ -353,8 +352,7 @@ namespace ecs::world
      * @tparam T - The component type to get.
      * @param e - A pointer to the Entity in question.
      * @return T* - A pointer to the Entity's component.
-     * 
-     * TODO: Bounds need to be checked. 
+     *
      */
     template <class T>
     T *World::get(Entity *e)
@@ -479,9 +477,6 @@ namespace ecs::world
 
     /**
      * @brief Adds a system to the dispathcer
-     * 
-     * TODO: Fully impelment a dependency tree for the dispatcher to understand which
-     * systems can be executed in parallel.
      * 
      * @param exe_ptr 
      */

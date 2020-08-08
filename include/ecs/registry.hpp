@@ -272,8 +272,6 @@ namespace ecs::registry
      * 
      *      Bounds are NOT checked at this point yet.
      * 
-     * TODO: Check Bounds.
-     * 
      * @tparam T - The type to be associated with the new RegistryNode
      * @param i - The index.
      * @return T* - A pointer to the T.
@@ -369,9 +367,7 @@ namespace ecs::registry
     /**
      * @brief A safe accessor to the Registry node data vector.
      * 
-     *  The intended use is to use this for iterating over the elements in the vector.
-     *  
-     *  TODO: Make this return a vector iterator, rather than the vector itself. 
+     *  The intended use is to use this for iterating over the elements in the vector. 
      *  
      *  Safety:
      *      This function uses cast<T> to access the RegistryNode data pointer, thus all

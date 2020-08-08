@@ -190,83 +190,83 @@ $(function() {
 <div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;            this-&gt;cast&lt;T&gt;()-&gt;push_back(std::move(t));</div>
 <div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;    }</div>
 <div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160; </div>
-<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a name="l00282"></a><span class="lineno"><a class="line" href="classecs_1_1registry_1_1_registry_node.html#aa5ae4bc56c5af719442d2c8e6cdd7aba">  282</a></span>&#160;    T *<a class="code" href="classecs_1_1registry_1_1_registry_node.html#aa5ae4bc56c5af719442d2c8e6cdd7aba">RegistryNode::get</a>(<span class="keywordtype">size_t</span> i)</div>
-<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;    {</div>
-<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;        <span class="keywordflow">switch</span> (this-&gt;NodeType)</div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;        {</div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;        <span class="keywordflow">case</span> RegistryNode::Type::Component:</div>
-<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;            <span class="keywordflow">return</span> &amp;((*this-&gt;cast&lt;T&gt;())[i]);</div>
-<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;        <span class="keywordflow">case</span> RegistryNode::Type::Resource:</div>
-<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;            <span class="keywordflow">return</span> &amp;((*this-&gt;cast&lt;T&gt;())[0]);</div>
-<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;        <span class="keywordflow">default</span>:</div>
-<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;            <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;Cannot get from a RegistryNode with Unknown Type&quot;</span>);</div>
-<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;        }</div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;    }</div>
-<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160; </div>
-<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a name="l00318"></a><span class="lineno"><a class="line" href="classecs_1_1registry_1_1_registry_node.html#afbe0f61b0a7deefe3d05f8fe69f3a95a">  318</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classecs_1_1registry_1_1_registry_node.html#afbe0f61b0a7deefe3d05f8fe69f3a95a">RegistryNode::erase</a>(<span class="keywordtype">size_t</span> i)</div>
-<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;    {</div>
-<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;        <span class="keywordflow">switch</span> (this-&gt;NodeType)</div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;        {</div>
-<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;        <span class="keywordflow">case</span> RegistryNode::Type::Component:</div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;            <span class="keyword">auto</span> vec_ptr = this-&gt;cast&lt;T&gt;();</div>
-<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;            vec_ptr-&gt;erase(vec_ptr-&gt;begin() + i);</div>
-<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;        }</div>
-<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;    }</div>
-<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160; </div>
-<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a name="l00340"></a><span class="lineno"><a class="line" href="classecs_1_1registry_1_1_registry_node.html#a618ffa51a954c66e4914507c2b3794a0">  340</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classecs_1_1registry_1_1_registry_node.html#a618ffa51a954c66e4914507c2b3794a0">RegistryNode::set</a>(<span class="keywordtype">size_t</span> i, T &amp;&amp;t)</div>
-<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;    {</div>
-<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;        <span class="keywordflow">switch</span> (this-&gt;NodeType)</div>
-<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;        {</div>
-<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;        <span class="keywordflow">case</span> RegistryNode::Type::Component:</div>
-<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;            this-&gt;cast&lt;T&gt;()-&gt;at(i) = std::move(t);</div>
-<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;        <span class="keywordflow">case</span> RegistryNode::Type::Resource:</div>
-<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;            this-&gt;cast&lt;T&gt;()-&gt;at(0) = std::move(t);</div>
-<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;        }</div>
-<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;    }</div>
-<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160; </div>
-<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a name="l00364"></a><span class="lineno"><a class="line" href="classecs_1_1registry_1_1_registry_node.html#a4b68bfab0d618b54422117aa66e5e31e">  364</a></span>&#160;    <span class="keywordtype">size_t</span> <a class="code" href="classecs_1_1registry_1_1_registry_node.html#a4b68bfab0d618b54422117aa66e5e31e">RegistryNode::size</a>()</div>
-<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;    {</div>
-<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;        <span class="keywordflow">return</span> this-&gt;cast&lt;T&gt;()-&gt;size();</div>
-<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;    }</div>
-<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160; </div>
-<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a name="l00384"></a><span class="lineno"><a class="line" href="classecs_1_1registry_1_1_registry_node.html#a77b0f6ead9b2af764049140c82c41a8c">  384</a></span>&#160;    std::shared_ptr&lt;std::vector&lt;T&gt;&gt; <a class="code" href="classecs_1_1registry_1_1_registry_node.html#a77b0f6ead9b2af764049140c82c41a8c">RegistryNode::iter</a>()</div>
-<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;    {</div>
-<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;        <span class="keywordflow">return</span> this-&gt;cast&lt;T&gt;();</div>
-<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;    }</div>
-<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160; </div>
-<div class="line"><a name="l00394"></a><span class="lineno"><a class="line" href="classecs_1_1registry_1_1_registry_node.html#a6727c51e7a038e62720cbe3af83cd12c">  394</a></span>&#160;    <span class="keywordtype">size_t</span> <a class="code" href="classecs_1_1registry_1_1_registry_node.html#a6727c51e7a038e62720cbe3af83cd12c">RegistryNode::get_hash</a>()</div>
-<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;    {</div>
-<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;        <span class="keywordflow">return</span> this-&gt;data_hash_code;</div>
-<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;    }</div>
-<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160; </div>
-<div class="line"><a name="l00405"></a><span class="lineno"><a class="line" href="classecs_1_1registry_1_1_registry_node.html#a1a9769be0c34b9f1d45ad21aa6550d78">  405</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classecs_1_1registry_1_1_registry_node.html#a1a9769be0c34b9f1d45ad21aa6550d78">RegistryNode::is_resource</a>()</div>
-<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;    {</div>
-<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;        <span class="keywordflow">return</span> this-&gt;NodeType == RegistryNode::Type::Resource;</div>
-<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;    }</div>
-<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160; </div>
-<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;} <span class="comment">// namespace ecs::registry</span></div>
-<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
+<div class="line"><a name="l00280"></a><span class="lineno"><a class="line" href="classecs_1_1registry_1_1_registry_node.html#aa5ae4bc56c5af719442d2c8e6cdd7aba">  280</a></span>&#160;    T *<a class="code" href="classecs_1_1registry_1_1_registry_node.html#aa5ae4bc56c5af719442d2c8e6cdd7aba">RegistryNode::get</a>(<span class="keywordtype">size_t</span> i)</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;    {</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;        <span class="keywordflow">switch</span> (this-&gt;NodeType)</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;        {</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;        <span class="keywordflow">case</span> RegistryNode::Type::Component:</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;            <span class="keywordflow">return</span> &amp;((*this-&gt;cast&lt;T&gt;())[i]);</div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;        <span class="keywordflow">case</span> RegistryNode::Type::Resource:</div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;            <span class="keywordflow">return</span> &amp;((*this-&gt;cast&lt;T&gt;())[0]);</div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;        <span class="keywordflow">default</span>:</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;            <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;Cannot get from a RegistryNode with Unknown Type&quot;</span>);</div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;        }</div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;    }</div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160; </div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
+<div class="line"><a name="l00316"></a><span class="lineno"><a class="line" href="classecs_1_1registry_1_1_registry_node.html#afbe0f61b0a7deefe3d05f8fe69f3a95a">  316</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classecs_1_1registry_1_1_registry_node.html#afbe0f61b0a7deefe3d05f8fe69f3a95a">RegistryNode::erase</a>(<span class="keywordtype">size_t</span> i)</div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;    {</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;        <span class="keywordflow">switch</span> (this-&gt;NodeType)</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;        {</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;        <span class="keywordflow">case</span> RegistryNode::Type::Component:</div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;            <span class="keyword">auto</span> vec_ptr = this-&gt;cast&lt;T&gt;();</div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;            vec_ptr-&gt;erase(vec_ptr-&gt;begin() + i);</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;        }</div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;    }</div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160; </div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
+<div class="line"><a name="l00338"></a><span class="lineno"><a class="line" href="classecs_1_1registry_1_1_registry_node.html#a618ffa51a954c66e4914507c2b3794a0">  338</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classecs_1_1registry_1_1_registry_node.html#a618ffa51a954c66e4914507c2b3794a0">RegistryNode::set</a>(<span class="keywordtype">size_t</span> i, T &amp;&amp;t)</div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;    {</div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;        <span class="keywordflow">switch</span> (this-&gt;NodeType)</div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;        {</div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;        <span class="keywordflow">case</span> RegistryNode::Type::Component:</div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;            this-&gt;cast&lt;T&gt;()-&gt;at(i) = std::move(t);</div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;        <span class="keywordflow">case</span> RegistryNode::Type::Resource:</div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;            this-&gt;cast&lt;T&gt;()-&gt;at(0) = std::move(t);</div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;        }</div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;    }</div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160; </div>
+<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
+<div class="line"><a name="l00362"></a><span class="lineno"><a class="line" href="classecs_1_1registry_1_1_registry_node.html#a4b68bfab0d618b54422117aa66e5e31e">  362</a></span>&#160;    <span class="keywordtype">size_t</span> <a class="code" href="classecs_1_1registry_1_1_registry_node.html#a4b68bfab0d618b54422117aa66e5e31e">RegistryNode::size</a>()</div>
+<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;    {</div>
+<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;        <span class="keywordflow">return</span> this-&gt;cast&lt;T&gt;()-&gt;size();</div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;    }</div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160; </div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
+<div class="line"><a name="l00380"></a><span class="lineno"><a class="line" href="classecs_1_1registry_1_1_registry_node.html#a77b0f6ead9b2af764049140c82c41a8c">  380</a></span>&#160;    std::shared_ptr&lt;std::vector&lt;T&gt;&gt; <a class="code" href="classecs_1_1registry_1_1_registry_node.html#a77b0f6ead9b2af764049140c82c41a8c">RegistryNode::iter</a>()</div>
+<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;    {</div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;        <span class="keywordflow">return</span> this-&gt;cast&lt;T&gt;();</div>
+<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;    }</div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160; </div>
+<div class="line"><a name="l00390"></a><span class="lineno"><a class="line" href="classecs_1_1registry_1_1_registry_node.html#a6727c51e7a038e62720cbe3af83cd12c">  390</a></span>&#160;    <span class="keywordtype">size_t</span> <a class="code" href="classecs_1_1registry_1_1_registry_node.html#a6727c51e7a038e62720cbe3af83cd12c">RegistryNode::get_hash</a>()</div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;    {</div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;        <span class="keywordflow">return</span> this-&gt;data_hash_code;</div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;    }</div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160; </div>
+<div class="line"><a name="l00401"></a><span class="lineno"><a class="line" href="classecs_1_1registry_1_1_registry_node.html#a1a9769be0c34b9f1d45ad21aa6550d78">  401</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classecs_1_1registry_1_1_registry_node.html#a1a9769be0c34b9f1d45ad21aa6550d78">RegistryNode::is_resource</a>()</div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;    {</div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;        <span class="keywordflow">return</span> this-&gt;NodeType == RegistryNode::Type::Resource;</div>
+<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;    }</div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160; </div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;} <span class="comment">// namespace ecs::registry</span></div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
-<div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a77b0f6ead9b2af764049140c82c41a8c"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a77b0f6ead9b2af764049140c82c41a8c">ecs::registry::RegistryNode::iter</a></div><div class="ttdeci">std::shared_ptr&lt; std::vector&lt; T &gt; &gt; iter()</div><div class="ttdoc">A safe accessor to the Registry node data vector.</div><div class="ttdef"><b>Definition:</b> registry.hpp:384</div></div>
-<div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a618ffa51a954c66e4914507c2b3794a0"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a618ffa51a954c66e4914507c2b3794a0">ecs::registry::RegistryNode::set</a></div><div class="ttdeci">void set(size_t i, T &amp;&amp;t)</div><div class="ttdoc">A safe setter function to data[i].</div><div class="ttdef"><b>Definition:</b> registry.hpp:340</div></div>
-<div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a4b68bfab0d618b54422117aa66e5e31e"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a4b68bfab0d618b54422117aa66e5e31e">ecs::registry::RegistryNode::size</a></div><div class="ttdeci">size_t size()</div><div class="ttdoc">A safe function to get the number of elements in the data vector.</div><div class="ttdef"><b>Definition:</b> registry.hpp:364</div></div>
-<div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_aa5ae4bc56c5af719442d2c8e6cdd7aba"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#aa5ae4bc56c5af719442d2c8e6cdd7aba">ecs::registry::RegistryNode::get</a></div><div class="ttdeci">T * get(size_t i)</div><div class="ttdoc">A safe accessor to data[i].</div><div class="ttdef"><b>Definition:</b> registry.hpp:282</div></div>
-<div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_afbe0f61b0a7deefe3d05f8fe69f3a95a"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#afbe0f61b0a7deefe3d05f8fe69f3a95a">ecs::registry::RegistryNode::erase</a></div><div class="ttdeci">void erase(size_t i)</div><div class="ttdoc">A way to remove an element from a Component Registry.</div><div class="ttdef"><b>Definition:</b> registry.hpp:318</div></div>
+<div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a77b0f6ead9b2af764049140c82c41a8c"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a77b0f6ead9b2af764049140c82c41a8c">ecs::registry::RegistryNode::iter</a></div><div class="ttdeci">std::shared_ptr&lt; std::vector&lt; T &gt; &gt; iter()</div><div class="ttdoc">A safe accessor to the Registry node data vector.</div><div class="ttdef"><b>Definition:</b> registry.hpp:380</div></div>
+<div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a618ffa51a954c66e4914507c2b3794a0"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a618ffa51a954c66e4914507c2b3794a0">ecs::registry::RegistryNode::set</a></div><div class="ttdeci">void set(size_t i, T &amp;&amp;t)</div><div class="ttdoc">A safe setter function to data[i].</div><div class="ttdef"><b>Definition:</b> registry.hpp:338</div></div>
+<div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a4b68bfab0d618b54422117aa66e5e31e"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a4b68bfab0d618b54422117aa66e5e31e">ecs::registry::RegistryNode::size</a></div><div class="ttdeci">size_t size()</div><div class="ttdoc">A safe function to get the number of elements in the data vector.</div><div class="ttdef"><b>Definition:</b> registry.hpp:362</div></div>
+<div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_aa5ae4bc56c5af719442d2c8e6cdd7aba"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#aa5ae4bc56c5af719442d2c8e6cdd7aba">ecs::registry::RegistryNode::get</a></div><div class="ttdeci">T * get(size_t i)</div><div class="ttdoc">A safe accessor to data[i].</div><div class="ttdef"><b>Definition:</b> registry.hpp:280</div></div>
+<div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_afbe0f61b0a7deefe3d05f8fe69f3a95a"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#afbe0f61b0a7deefe3d05f8fe69f3a95a">ecs::registry::RegistryNode::erase</a></div><div class="ttdeci">void erase(size_t i)</div><div class="ttdoc">A way to remove an element from a Component Registry.</div><div class="ttdef"><b>Definition:</b> registry.hpp:316</div></div>
 <div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a4b415a6aaeb1f41c5ab99b81559e1cf4"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a4b415a6aaeb1f41c5ab99b81559e1cf4">ecs::registry::RegistryNode::create_resource</a></div><div class="ttdeci">static RegistryNode create_resource(T &amp;t)</div><div class="ttdoc">A safe constructor of a Resource RegistryNode.</div><div class="ttdef"><b>Definition:</b> registry.hpp:152</div></div>
 <div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a52654f8580fd419fadd75dc2af0b6c5a"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a52654f8580fd419fadd75dc2af0b6c5a">ecs::registry::RegistryNode::push</a></div><div class="ttdeci">void push(T &amp;&amp;t)</div><div class="ttdoc">A safe function to add a T to the end of the data vector.</div><div class="ttdef"><b>Definition:</b> registry.hpp:258</div></div>
 <div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_afbc20bc48f92623ee9bd46cd41299e4b"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#afbc20bc48f92623ee9bd46cd41299e4b">ecs::registry::RegistryNode::create</a></div><div class="ttdeci">static RegistryNode create()</div><div class="ttdoc">A safe constructor of a Component RegistryNode.</div><div class="ttdef"><b>Definition:</b> registry.hpp:119</div></div>
-<div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a1a9769be0c34b9f1d45ad21aa6550d78"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a1a9769be0c34b9f1d45ad21aa6550d78">ecs::registry::RegistryNode::is_resource</a></div><div class="ttdeci">bool is_resource()</div><div class="ttdoc">Function to check if a RegistryNode is a resource.</div><div class="ttdef"><b>Definition:</b> registry.hpp:405</div></div>
-<div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a6727c51e7a038e62720cbe3af83cd12c"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a6727c51e7a038e62720cbe3af83cd12c">ecs::registry::RegistryNode::get_hash</a></div><div class="ttdeci">size_t get_hash()</div><div class="ttdoc">Getter function for the data hash code.</div><div class="ttdef"><b>Definition:</b> registry.hpp:394</div></div>
+<div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a1a9769be0c34b9f1d45ad21aa6550d78"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a1a9769be0c34b9f1d45ad21aa6550d78">ecs::registry::RegistryNode::is_resource</a></div><div class="ttdeci">bool is_resource()</div><div class="ttdoc">Function to check if a RegistryNode is a resource.</div><div class="ttdef"><b>Definition:</b> registry.hpp:401</div></div>
+<div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html_a6727c51e7a038e62720cbe3af83cd12c"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html#a6727c51e7a038e62720cbe3af83cd12c">ecs::registry::RegistryNode::get_hash</a></div><div class="ttdeci">size_t get_hash()</div><div class="ttdoc">Getter function for the data hash code.</div><div class="ttdef"><b>Definition:</b> registry.hpp:390</div></div>
 <div class="ttc" id="aclassecs_1_1registry_1_1_registry_node_html"><div class="ttname"><a href="classecs_1_1registry_1_1_registry_node.html">ecs::registry::RegistryNode</a></div><div class="ttdoc">A non-templated data structure to hold a generic type.</div><div class="ttdef"><b>Definition:</b> registry.hpp:42</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

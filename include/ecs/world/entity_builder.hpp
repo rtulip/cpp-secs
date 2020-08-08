@@ -12,7 +12,7 @@ namespace ecs::world
      * which comsumes t. Upon calling .build() the Entity is added to the World which 
      * it's a part of. 
      * 
-     * TODO: How to delay adding the components until .build() is called.
+     * TODO: Delay adding the components until .build() is called.
      * 
      */
     class World::EntityBuilder

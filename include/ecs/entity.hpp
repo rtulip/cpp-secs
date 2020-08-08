@@ -124,7 +124,6 @@ namespace ecs::entity
      * @return true - The Entity has the component.
      * @return false - The Entity does not have the component.
      * 
-     * TODO: Check bounds.
      */
     bool Entity::has_component(size_t cid) const
     {
