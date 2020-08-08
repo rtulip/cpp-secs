@@ -107,7 +107,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a54a2f8816373ec04161bec04d6c3c867"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if this <a class="el" href="classecs_1_1entity_1_1_entity.html" title="Entities are a sophisticated identifier.">Entity</a> has ALL components in the mask.  <a href="classecs_1_1entity_1_1_entity.html#a54a2f8816373ec04161bec04d6c3c867">More...</a><br /></td></tr>
 <tr class="separator:a54a2f8816373ec04161bec04d6c3c867"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0154e46693eb5fca6fed23cfd7371d8a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecs_1_1entity_1_1_entity.html#a0154e46693eb5fca6fed23cfd7371d8a">has_valid_component</a> (bitset mask) const</td></tr>
-<tr class="memdesc:a0154e46693eb5fca6fed23cfd7371d8a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if the <a class="el" href="classecs_1_1entity_1_1_entity.html" title="Entities are a sophisticated identifier.">Entity</a> has a valid component.  <a href="classecs_1_1entity_1_1_entity.html#a0154e46693eb5fca6fed23cfd7371d8a">More...</a><br /></td></tr>
+<tr class="memdesc:a0154e46693eb5fca6fed23cfd7371d8a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks is an entity has a valid set of components.  <a href="classecs_1_1entity_1_1_entity.html#a0154e46693eb5fca6fed23cfd7371d8a">More...</a><br /></td></tr>
 <tr class="separator:a0154e46693eb5fca6fed23cfd7371d8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4dd4b108cd8e6d36acb2276210e69cc9"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecs_1_1entity_1_1_entity.html#a4dd4b108cd8e6d36acb2276210e69cc9">get_component</a> (size_t cid) const</td></tr>
 <tr class="memdesc:a4dd4b108cd8e6d36acb2276210e69cc9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Getter function for the component index.  <a href="classecs_1_1entity_1_1_entity.html#a4dd4b108cd8e6d36acb2276210e69cc9">More...</a><br /></td></tr>
@@ -230,11 +230,11 @@ Public Member Functions</h2></td></tr>
 <p>This is used when a component is removed. If the index of that component is lower than this index_lookup, then the index has to be decreased. So long as this is called once for every index removed which is lower, than the index lookup table will still be correct.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">cid</td><td></td></tr>
+    <tr><td class="paramname">cid</td><td>- The component index </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>size_t </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>size_t - The new component index </dd></dl>
 
 </div>
 </div>
@@ -381,10 +381,10 @@ false - The <a class="el" href="classecs_1_1entity_1_1_entity.html" title="Entit
       </table>
 </div><div class="memdoc">
 
-<p>Checks if the <a class="el" href="classecs_1_1entity_1_1_entity.html" title="Entities are a sophisticated identifier.">Entity</a> has a valid component. </p>
+<p>Checks is an entity has a valid set of components. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">cid</td><td></td></tr>
+    <tr><td class="paramname">mask</td><td>- The bitmask of components </td></tr>
   </table>
   </dd>
 </dl>
@@ -413,7 +413,7 @@ false </dd></dl>
 <p>Checks if the <a class="el" href="classecs_1_1entity_1_1_entity.html" title="Entities are a sophisticated identifier.">Entity</a> has a valid component. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">cid</td><td></td></tr>
+    <tr><td class="paramname">cid</td><td>- The component id </td></tr>
   </table>
   </dd>
 </dl>
@@ -443,7 +443,7 @@ false </dd></dl>
 <p>This is used for the eventual removal of the <a class="el" href="classecs_1_1entity_1_1_entity.html" title="Entities are a sophisticated identifier.">Entity</a>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">cid</td><td></td></tr>
+    <tr><td class="paramname">cid</td><td>- The component id </td></tr>
   </table>
   </dd>
 </dl>

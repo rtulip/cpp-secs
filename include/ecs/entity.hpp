@@ -104,7 +104,7 @@ namespace ecs::entity
      * 
      * This is used for the eventual removal of the Entity.
      * 
-     * @param cid 
+     * @param cid - The component id
      */
     void Entity::invalidate_component(size_t cid)
     {
@@ -134,7 +134,7 @@ namespace ecs::entity
     /**
      * @brief Checks if the Entity has a valid component 
      * 
-     * @param cid 
+     * @param cid - The component id
      * @return true 
      * @return false 
      */
@@ -158,9 +158,9 @@ namespace ecs::entity
     }
 
     /**
-     * @brief Checks if the Entity has a valid component 
+     * @brief Checks is an entity has a valid set of components
      * 
-     * @param cid 
+     * @param mask - The bitmask of components
      * @return true 
      * @return false 
      */
@@ -188,8 +188,8 @@ namespace ecs::entity
      * called once for every index removed which is lower, than the index lookup table
      * will still be correct.
      * 
-     * @param cid 
-     * @return size_t 
+     * @param cid - The component index
+     * @return size_t - The new component index
      */
     size_t Entity::decrement_component(size_t cid)
     {
