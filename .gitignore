@@ -1,1 +1,4 @@
 .vscode/*
+tmp_cmake
+build
+docs
