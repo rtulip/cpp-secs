@@ -19,7 +19,7 @@ cd cpp-secs
 sudo ./install.sh
 ```
 
-This will check the versio of `CMake` before installing the `OpenGL`, `GLUT`, and `Boost` libraries which are required to compile and run the application. `Doxygen` is also installed, should you want to read the documentation.
+This will check the version of `CMake` before installing the `OpenGL`, `GLUT`, and `Boost` libraries which are required to compile and run the application. `Doxygen` is also installed, should you want to read the documentation.
 
 ## Running the demo.
 Once the install script has been run, building and running the demo is easy. Just run the `clean_build.sh` script.
